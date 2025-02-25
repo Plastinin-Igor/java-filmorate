@@ -14,7 +14,7 @@ import java.util.Map;
 @Service
 @Validated
 @RestController
-@RequestMapping("api/v1/users")
+@RequestMapping("users")
 public class UserController {
     private final Map<Long, User> users = new HashMap<>();
 
@@ -47,8 +47,11 @@ public class UserController {
                 return ResponseEntity.badRequest().build();
             }
         }
-
+        //Имя для отображения может быть пустым — в таком случае будет использован логин
         user.setId(getNextId());
+        if (user.getName() == null) {
+            user.setName(user.getLogin());
+        }
         users.put(user.getId(), user);
         return ResponseEntity.ok(user);
     }
@@ -72,13 +75,19 @@ public class UserController {
             }
 
             User oldUser = users.get(newUser.getId());
+
+            //Имя для отображения может быть пустым — в таком случае будет использован логин
+            if (newUser.getName() == null) {
+                newUser.setName(newUser.getLogin());
+            }
+
             oldUser.setName(newUser.getName());
             oldUser.setLogin(newUser.getLogin());
             oldUser.setEmail(newUser.getEmail());
             oldUser.setBirthday(newUser.getBirthday());
             return ResponseEntity.ok(oldUser);
         } else {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.internalServerError().body(newUser);
         }
     }
 
