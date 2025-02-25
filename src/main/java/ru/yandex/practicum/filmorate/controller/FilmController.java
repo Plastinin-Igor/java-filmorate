@@ -36,7 +36,7 @@ public class FilmController {
      * Добавлвение фильма
      *
      * @param film Film
-     * @return ResponseEntity<Film>
+     * @return ResponseEntity Film
      */
     @PostMapping
     public ResponseEntity<Film> create(@Valid @RequestBody Film film) {
@@ -49,7 +49,7 @@ public class FilmController {
      * Обновление фильма
      *
      * @param newFilm Film
-     * @return ResponseEntity<Film>
+     * @return ResponseEntity Film
      */
     @PutMapping
     public ResponseEntity<Film> update(@Valid @RequestBody Film newFilm) {
@@ -59,14 +59,14 @@ public class FilmController {
             oldFilm.setDescription(newFilm.getDescription());
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
             oldFilm.setDuration(newFilm.getDuration());
-            return ResponseEntity.ok(newFilm);
+            return ResponseEntity.ok(oldFilm);
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
     /**
-     * Получение всех фильмов
+     * Получение списка фильмов
      *
      * @return Collection
      */
