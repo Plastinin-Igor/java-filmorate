@@ -81,7 +81,7 @@ public class FilmController {
      */
     @GetMapping
     public Collection<Film> findAll() {
-        log.info("Найдено {} фильмов.", films.size());
+        log.info("Выполнен запрос к списку фильмов. Найдено фильмов {}.", films.size());
         return films.values();
     }
 
