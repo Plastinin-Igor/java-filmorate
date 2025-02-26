@@ -1,14 +1,20 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.validation.*;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.model.Film;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 @SpringBootTest
+@Validated
 class FilmControllerTest {
     private final Film film = Film.builder()
             .id(1L)
@@ -22,6 +28,16 @@ class FilmControllerTest {
     private final FilmController controller = new FilmController();
 
 
+    private void validate(Film film) {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
+    }
+
+
     @Test
     void createTest() {
         Film thisFilm = new Film(1L, "Интерстеллар",
@@ -30,20 +46,27 @@ class FilmControllerTest {
                 LocalDate.of(2014, 10, 26), 169);
 
         controller.create(thisFilm);
-        Assertions.assertEquals(film, thisFilm);
-        Assertions.assertEquals(1, controller.findAll().size(), "Должен быть добавлен 1 фильм.");
+        assertEquals(film, thisFilm);
+        assertEquals(1, controller.findAll().size(), "Должен быть добавлен 1 фильм.");
     }
 
     @Test
-    void createFailNameTest() throws JsonProcessingException {
-        Film thisFilm = Film.builder()
-                .description("Фильм, вдохновленный идеями физика Кипа Торна")
-                .releaseDate(LocalDate.of(2014, 10, 26))
-                .duration(169)
+    void createFailNameTest() {
+        // Проверка, что имя фильма не может быть пустым
+        Film film = Film.builder()
+                .name("")
+                .description("Описание")
+                .releaseDate(LocalDate.now())
+                .duration(120)
                 .build();
 
+        ConstraintViolationException exception = assertThrows(
+                ConstraintViolationException.class,
+                () -> validate(film));
 
+        assertEquals("Название фильма не может быть пустым", exception.getConstraintViolations().iterator().next().getMessage());
     }
+
 
     @Test
     void updateTest() {
@@ -56,7 +79,7 @@ class FilmControllerTest {
         controller.update(thisFilm);
 
         controller.findAll().forEach(f -> {
-            Assertions.assertEquals(f.getDescription(), thisFilm.getDescription(), "Описание не обновлилось");
+            assertEquals(f.getDescription(), thisFilm.getDescription(), "Описание не обновлилось");
         });
     }
 
@@ -66,8 +89,7 @@ class FilmControllerTest {
         controller.create(film);
         controller.create(film);
 
-        Assertions.assertEquals(3, controller.findAll().size(), "Должно быть добавлено 3 фильма.");
+        assertEquals(3, controller.findAll().size(), "Должно быть добавлено 3 фильма.");
     }
-
 
 }
