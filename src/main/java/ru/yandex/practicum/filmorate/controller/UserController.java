@@ -7,10 +7,13 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Service
 @Validated
 @RestController
@@ -44,6 +47,8 @@ public class UserController {
         for (User userList : users.values()) {
             if (userList.getLogin().equals(user.getLogin())
                     || userList.getEmail().equals(user.getEmail())) {
+                log.error("Пользователь с логином {} и/или email {} уже зарегистрирован в системе.",
+                        user.getLogin(), user.getEmail());
                 return ResponseEntity.badRequest().build();
             }
         }
@@ -53,6 +58,7 @@ public class UserController {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
+        log.info("Пользователь {} (id: {}) добавлен в систему.", user.getLogin(), user.getId());
         return ResponseEntity.ok(user);
     }
 
@@ -70,6 +76,8 @@ public class UserController {
                 if (!userList.getId().equals(newUser.getId())
                         && (userList.getLogin().equals(newUser.getLogin())
                         || userList.getEmail().equals(newUser.getEmail()))) {
+                    log.error("Пользователь с логином {} и/или email {} уже зарегистрирован в системе.",
+                            newUser.getLogin(), newUser.getEmail());
                     return ResponseEntity.badRequest().build();
                 }
             }
@@ -85,8 +93,10 @@ public class UserController {
             oldUser.setLogin(newUser.getLogin());
             oldUser.setEmail(newUser.getEmail());
             oldUser.setBirthday(newUser.getBirthday());
+            log.info("Пользователь {} (id: {}) успешно обновлен.", oldUser.getLogin(), oldUser.getId());
             return ResponseEntity.ok(oldUser);
         } else {
+            log.error("Пользователь с id {} не найден в системе.", newUser.getId());
             return ResponseEntity.internalServerError().body(newUser);
         }
     }
@@ -98,6 +108,7 @@ public class UserController {
      */
     @GetMapping
     public Collection<User> findAll() {
+        log.info("В системе зарегистрировано {} пользователей.", users.size());
         return users.values();
     }
 }

@@ -1,29 +1,25 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import org.slf4j.*;
 
-
+@Slf4j
 @Service
 @Validated
 @RestController
 @RequestMapping("films")
 public class FilmController {
-    private final static Logger log = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(FilmController.class);
-
     private final Map<Long, Film> films = new HashMap<>();
 
     /**
@@ -49,11 +45,9 @@ public class FilmController {
 
     @PostMapping
     public ResponseEntity<Film> create(@Valid @RequestBody Film film) {
-        log.setLevel(Level.DEBUG);
-        log.debug("Получили новый фильм для добавления {}", film);
         film.setId(getNextId());
         films.put(film.getId(), film);
-        log.debug("Добавление фильма успешно выполнено.");
+        log.info("Добавлен фильм {} с идентификатором {}.", film.getName(), film.getId());
         return ResponseEntity.ok(film);
 
     }
@@ -72,8 +66,10 @@ public class FilmController {
             oldFilm.setDescription(newFilm.getDescription());
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
             oldFilm.setDuration(newFilm.getDuration());
+            log.info("Фильм {} изменен.", oldFilm.getName());
             return ResponseEntity.ok(oldFilm);
         } else {
+            log.error("Фильм с идентификатором {} не найден.", newFilm.getId());
             return ResponseEntity.internalServerError().body(newFilm);
         }
     }
@@ -85,6 +81,7 @@ public class FilmController {
      */
     @GetMapping
     public Collection<Film> findAll() {
+        log.info("Найдено {} фильмов.", films.size());
         return films.values();
     }
 
