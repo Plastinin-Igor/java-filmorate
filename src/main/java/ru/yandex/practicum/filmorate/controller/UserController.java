@@ -108,7 +108,7 @@ public class UserController {
      */
     @GetMapping
     public Collection<User> findAll() {
-        log.info("В системе зарегистрировано {} пользователей.", users.size());
+        log.info("Выполнен запрос к списку пользователей. В системе зарегистрировано пользователей: {}.", users.size());
         return users.values();
     }
 }
