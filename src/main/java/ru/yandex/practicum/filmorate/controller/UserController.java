@@ -21,7 +21,7 @@ import java.util.Map;
 public class UserController {
     private final Map<Long, User> users = new HashMap<>();
 
-    // Генерация уникального идетнификатора
+    // Генерация уникального идентификатора
     private long getNextId() {
         long currentMaxId = users.keySet()
                 .stream()
@@ -32,15 +32,17 @@ public class UserController {
     }
 
     //Проверить, существует ли пользователь
-    private boolean isUserUnique(String login, String email) {
+    private boolean isUserUnique(String login, String email, Long id) {
         for (User userList : users.values()) {
-            if (userList.getLogin().equals(login)) {
-                log.error("Пользователь с логином {} уже зарегистрирован в системе.", login);
-                return false;
-            }
-            if (userList.getEmail().equals(email)) {
-                log.error("Пользователь с email {} уже зарегистрирован в системе.", email);
-                return false;
+            if (userList.getId() != id) {
+                if (userList.getLogin().equals(login)) {
+                    log.error("Пользователь с логином {} уже зарегистрирован в системе.", login);
+                    return false;
+                }
+                if (userList.getEmail().equals(email)) {
+                    log.error("Пользователь с email {} уже зарегистрирован в системе.", email);
+                    return false;
+                }
             }
         }
         return true;
@@ -60,7 +62,7 @@ public class UserController {
      */
     @PostMapping
     public ResponseEntity<User> create(@Valid @RequestBody User user) {
-        if (isUserUnique(user.getLogin(), user.getEmail())) {
+        if (isUserUnique(user.getLogin(), user.getEmail(), user.getId())) {
             user.setId(getNextId());
             user.setName(checkName(user.getName(), user.getLogin()));
             users.put(user.getId(), user);
@@ -81,12 +83,12 @@ public class UserController {
     public ResponseEntity<User> update(@Valid @RequestBody User newUser) {
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());
-            if (isUserUnique(newUser.getLogin(), newUser.getEmail())) {
+            if (isUserUnique(newUser.getLogin(), newUser.getEmail(), newUser.getId())) {
                 oldUser.setName(checkName(newUser.getName(), newUser.getLogin()));
                 oldUser.setLogin(newUser.getLogin());
                 oldUser.setEmail(newUser.getEmail());
                 oldUser.setBirthday(newUser.getBirthday());
-                log.info("Пользоватеь {} (id: {}) успешно обновлен в системе.", oldUser.getLogin(), oldUser.getId());
+                log.info("Пользователь {} (id: {}) успешно обновлен в системе.", oldUser.getLogin(), oldUser.getId());
                 return ResponseEntity.ok(oldUser);
             } else {
                 return ResponseEntity.badRequest().build();

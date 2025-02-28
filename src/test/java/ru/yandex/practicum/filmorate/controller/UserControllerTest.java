@@ -74,7 +74,7 @@ class UserControllerTest {
         controller.create(thisUser);
 
         controller.findAll().forEach(f -> {
-            assertEquals(f.getLogin(), f.getName(), "Описание не обновлилось");
+            assertEquals(f.getLogin(), f.getName(), "Описание не обновилось");
         });
 
 
@@ -82,7 +82,7 @@ class UserControllerTest {
 
     @Test
     void createFailEmailTest() {
-        // Проверка, что введеное значение является электронной почтой
+        // Проверка, что введенное значение является электронной почтой
         User user = User.builder()
                 .id(1L)
                 .email("@plastinin@yandex.ru")
