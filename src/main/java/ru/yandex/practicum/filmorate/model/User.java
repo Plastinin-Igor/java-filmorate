@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 public class User {
     private Long id;
 
+    @NotNull(message = "Адрес электронной почты должен быть задан")
     @Email(message = "Не является электронной почтой")
     private String email;
 
@@ -23,6 +25,7 @@ public class User {
 
     private String name;
 
+    @NotNull(message = "Дата рождения должна быть задана")
     @Past(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 }
