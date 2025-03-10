@@ -43,7 +43,7 @@ class FilmControllerTest {
         Film thisFilm = new Film(1L, "Интерстеллар",
                 "Коллектив исследователей и учёных отправляется сквозь червоточину в путешествие, " +
                         "чтобы найти планету с подходящими для человечества условиями.",
-                LocalDate.of(2014, 10, 26), 169);
+                LocalDate.of(2014, 10, 26), 169, 0);
 
         controller.create(thisFilm);
         assertEquals(film, thisFilm);
@@ -135,7 +135,7 @@ class FilmControllerTest {
         Film thisFilm = new Film(1L, "Интерстеллар",
                 "Фильм, вдохновленный идеями физика Кипа Торна, исследует темы выживания человечества, " +
                         "родительской любви и парадоксов времени через призму релятивистской физики",
-                LocalDate.of(2014, 10, 26), 169);
+                LocalDate.of(2014, 10, 26), 169, 0);
 
         controller.create(film);
         controller.update(thisFilm);

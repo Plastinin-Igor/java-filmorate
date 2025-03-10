@@ -30,6 +30,8 @@ public class Film {
     @Positive(message = "Продолжительность фильма не может быть меньше нуля")
     private int duration;
 
+    private int rating;
+
     @AssertTrue(message = "Дата релиза не может быть раньше 28 декабря 1895 года")
     public boolean isReleaseDateValid() {
         LocalDate cinemaBirthday = LocalDate.of(1895, 12, 28);

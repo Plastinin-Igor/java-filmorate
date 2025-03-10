@@ -3,20 +3,19 @@ package ru.yandex.practicum.filmorate.storage;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
 
-    private final Map<Long, Film> films = new HashMap<>();
+    private final Map<Long, Film> films;
+    private final Map<Long, Set<Long>> likes;
 
-    /**
-     * Генерация уникального идентификатора
-     *
-     * @return long
-     */
+    public InMemoryFilmStorage() {
+        films = new HashMap<>();
+        likes = new HashMap<>();
+    }
+
     private long getNextId() {
         long currentMaxId = films.keySet()
                 .stream()
@@ -26,24 +25,13 @@ public class InMemoryFilmStorage implements FilmStorage {
         return ++currentMaxId;
     }
 
-    /**
-     * Добавление фильма
-     *
-     * @param film Film
-     * @return Film
-     */
     public Film addFilm(Film film) {
         film.setId(getNextId());
+        film.setRating(0);
         films.put(film.getId(), film);
         return film;
     }
 
-    /**
-     * Изменение фильма
-     *
-     * @param newFilm Film
-     * @return Film
-     */
     public Film updateFilm(Film newFilm) {
         Film oldFilm = films.get(newFilm.getId());
         oldFilm.setName(newFilm.getName());
@@ -53,22 +41,46 @@ public class InMemoryFilmStorage implements FilmStorage {
         return oldFilm;
     }
 
-    /**
-     * Удаление фильма
-     *
-     * @param film Film
-     */
-    public void deleteFilm(Film film) {
-        films.remove(film.getId());
+
+    public void deleteFilm(Long filmId) {
+        films.remove(filmId);
     }
 
-    /**
-     * Список всех фильмов
-     *
-     * @return Collection Film
-     */
-    public Collection<Film> findAll() {
+    @Override
+    public Collection<Film> getFilms() {
         return films.values();
     }
 
+    @Override
+    public Film getFilmById(Long filmId) {
+        return films.get(filmId);
+    }
+
+    @Override
+    public void addLike(Long filmId, Long userId) {
+        if (likes.containsKey(filmId)) {
+            likes.put(filmId, new HashSet<>());
+            likes.get(filmId).add(userId);
+            Film film = films.get(filmId);
+            film.setRating(film.getRating() + 1);
+        } else {
+            likes.get(filmId).add(userId);
+            Film film = films.get(filmId);
+            film.setRating(film.getRating() + 1);
+        }
+    }
+
+    @Override
+    public void deleteLike(Long filmId, Long userId) {
+        likes.get(filmId).remove(userId);
+        Film film = films.get(filmId);
+        film.setRating(film.getRating() - 1);
+    }
+
+    @Override
+    public Collection<Film> getTopPopularFilms() {
+        List<Film> filmOrderRate = new ArrayList<>(films.values());
+        Collections.sort(filmOrderRate, Comparator.comparing(Film::getRating));
+        return filmOrderRate.subList(0, Math.min(10, filmOrderRate.size()));
+    }
 }
