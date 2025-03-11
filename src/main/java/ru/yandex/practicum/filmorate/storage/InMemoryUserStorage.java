@@ -8,8 +8,6 @@ import java.util.*;
 @Component
 public class InMemoryUserStorage implements UserStorage {
 
-    //TODO проверки и исключения
-
     //Список пользователей
     private final Map<Long, User> users;
     //Список друзей
@@ -29,19 +27,17 @@ public class InMemoryUserStorage implements UserStorage {
         return ++currentMaxId;
     }
 
-    public User addUser(User user) {
+    public void addUser(User user) {
         user.setId(getNextId());
         users.put(user.getId(), user);
-        return user;
     }
 
-    public User updateUser(User newUser) {
+    public void updateUser(User newUser) {
         User oldUser = users.get(newUser.getId());
         oldUser.setName(newUser.getName());
         oldUser.setLogin(newUser.getLogin());
         oldUser.setEmail(newUser.getEmail());
         oldUser.setBirthday(newUser.getBirthday());
-        return oldUser;
     }
 
     public void deleteUser(Long userId) {
@@ -59,14 +55,12 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User addFriends(Long userId, Long friendId) {
+    public void addFriends(Long userId, Long friendId) {
         if (!friends.containsKey(userId)) {
             friends.put(userId, new HashSet<>());
             friends.get(userId).add(friendId);
-            return users.get(friendId);
         } else {
             friends.get(userId).add(friendId);
-            return users.get(friendId);
         }
     }
 

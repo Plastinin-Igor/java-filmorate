@@ -1,112 +1,54 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Service
 @Validated
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("users")
 public class UserController {
-    private final Map<Long, User> users = new HashMap<>();
+    private final UserService userService;
 
-    // Генерация уникального идентификатора
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
-    }
-
-    //Проверить, существует ли пользователь
-    private boolean isUserUnique(String login, String email, Long id) {
-        for (User userList : users.values()) {
-            if (userList.getId() != id) {
-                if (userList.getLogin().equals(login)) {
-                    log.error("Пользователь с логином {} уже зарегистрирован в системе.", login);
-                    return false;
-                }
-                if (userList.getEmail().equals(email)) {
-                    log.error("Пользователь с email {} уже зарегистрирован в системе.", email);
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    // Если имя пользователя не задано - используем логин
-    private String checkName(String name, String login) {
-        return name != null ? name : login;
-    }
-
-
-    /**
-     * Добавление пользователя
-     *
-     * @param user User
-     * @return ResponseEntity User
-     */
     @PostMapping
-    public ResponseEntity<User> create(@Valid @RequestBody User user) {
-        if (isUserUnique(user.getLogin(), user.getEmail(), user.getId())) {
-            user.setId(getNextId());
-            user.setName(checkName(user.getName(), user.getLogin()));
-            users.put(user.getId(), user);
-            log.info("Пользователь {} (id: {}) добавлен в систему.", user.getLogin(), user.getId());
-            return ResponseEntity.ok(user);
-        } else {
-            return ResponseEntity.badRequest().build();
-        }
+    public void create(@Valid @RequestBody User user) {
+        userService.addUser(user);
+        log.info("Пользователь {} успешно добавлен в систему.", user.getLogin());
     }
 
-    /**
-     * Обновление данных пользователя
-     *
-     * @param newUser User
-     * @return ResponseEntity User
-     */
     @PutMapping
-    public ResponseEntity<User> update(@Valid @RequestBody User newUser) {
-        if (users.containsKey(newUser.getId())) {
-            User oldUser = users.get(newUser.getId());
-            if (isUserUnique(newUser.getLogin(), newUser.getEmail(), newUser.getId())) {
-                oldUser.setName(checkName(newUser.getName(), newUser.getLogin()));
-                oldUser.setLogin(newUser.getLogin());
-                oldUser.setEmail(newUser.getEmail());
-                oldUser.setBirthday(newUser.getBirthday());
-                log.info("Пользователь {} (id: {}) успешно обновлен в системе.", oldUser.getLogin(), oldUser.getId());
-                return ResponseEntity.ok(oldUser);
-            } else {
-                return ResponseEntity.badRequest().build();
-            }
-        } else {
-            log.error("Пользователь с id {} не найден в системе.", newUser.getId());
-            return ResponseEntity.internalServerError().body(newUser);
-        }
+    public void update(@Valid @RequestBody User newUser) {
+        userService.updateUser(newUser);
+        log.info("Пользователь {} с Id: {} успешно обновлен в системе", newUser.getLogin(), newUser.getId());
     }
 
-    /**
-     * Получение списка пользователей
-     *
-     * @return Collection User
-     */
     @GetMapping
     public Collection<User> findAll() {
-        log.info("Выполнен запрос к списку пользователей. В системе зарегистрировано пользователей: {}.", users.size());
-        return users.values();
+        log.info("Выполнен запрос к списку пользователей. В системе зарегистрировано пользователей: {}.",
+                userService.getUsers().size());
+        return userService.getUsers();
     }
+
+    @GetMapping("/{userId}")
+    public User getUserById(@PathVariable long userId) {
+        return userService.getUserById(userId);
+    }
+
+    //TODO: PUT /users/{id}/friends/{friendId} — добавление в друзья.
+    //TODO: DELETE /users/{id}/friends/{friendId} — удаление из друзей.
+    //TODO: GET /users/{id}/friends — возвращаем список пользователей, являющихся его друзьями.
+    //TODO: GET /users/{id}/friends/common/{otherId} — список друзей, общих с другим пользователем.
+
+
 }
