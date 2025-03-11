@@ -33,21 +33,22 @@ public class UserService {
     //Получение пользователя по Id
     public User getUserById(Long userId) {
         userExist(userId);
-        final User user = userStorage.getUserById(userId).get();
         return userStorage.getUserById(userId).get();
     }
 
     //Исправление пользователя
     public void updateUser(User newUser) {
         userExist(newUser.getId());
-        final User oldUser = userStorage.getUserById(newUser.getId()).get();
-        isUserUnique(newUser.getLogin(), newUser.getEmail(), newUser.getId());
-        oldUser.setName(checkName(newUser.getName(), newUser.getLogin()));
-        oldUser.setLogin(newUser.getLogin());
-        oldUser.setEmail(newUser.getEmail());
-        oldUser.setBirthday(newUser.getBirthday());
+        userStorage.updateUser(newUser);
+        log.info("Пользователь с Id: {} успешно обновлен в системе.", newUser);
     }
 
+    //Удаление пользователя
+    public void deleteUser(Long userId) {
+        userExist(userId);
+        userStorage.deleteUser(userId);
+        log.info("Пользователь с Id: {} успешно удален из системы.", userId);
+    }
 
     //TODO: PUT /users/{id}/friends/{friendId} — добавление в друзья.
     public void addFriends(Long userId, Long friendId) {
@@ -89,6 +90,7 @@ public class UserService {
             throw new NotFoundException("Пользователь с Id: " + userId + " не найден в системе.");
         }
     }
+
 
     //Проверить пользователя на уникальность
     private void isUserUnique(String login, String email, Long id) {
