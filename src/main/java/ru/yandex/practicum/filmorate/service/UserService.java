@@ -32,21 +32,15 @@ public class UserService {
 
     //Получение пользователя по Id
     public User getUserById(Long userId) {
-        final User user = userStorage.getUserById(userId);
-        if (user == null) {
-            log.error("При получении пользователя по Id: {} данные не нйдены.", userId);
-            throw new NotFoundException("Пользователь с Id: " + userId + " не найден.");
-        }
-        return userStorage.getUserById(userId);
+        userExist(userId);
+        final User user = userStorage.getUserById(userId).get();
+        return userStorage.getUserById(userId).get();
     }
 
     //Исправление пользователя
     public void updateUser(User newUser) {
-        final User oldUser = userStorage.getUserById(newUser.getId());
-        if (oldUser == null) {
-            log.error("Пользователь с Id: {} не найден.", newUser.getId());
-            throw new NotFoundException("Пользователь с Id: " + newUser.getId() + " не найден.");
-        }
+        userExist(newUser.getId());
+        final User oldUser = userStorage.getUserById(newUser.getId()).get();
         isUserUnique(newUser.getLogin(), newUser.getEmail(), newUser.getId());
         oldUser.setName(checkName(newUser.getName(), newUser.getLogin()));
         oldUser.setLogin(newUser.getLogin());
@@ -56,12 +50,47 @@ public class UserService {
 
 
     //TODO: PUT /users/{id}/friends/{friendId} — добавление в друзья.
+    public void addFriends(Long userId, Long friendId) {
+        userExist(userId);
+        userExist(friendId);
+        userStorage.addFriends(userId, friendId);
+    }
+
     //TODO: DELETE /users/{id}/friends/{friendId} — удаление из друзей.
+    public void deleteFriend(Long userId, Long friendId) {
+        userExist(userId);
+        userExist(friendId);
+        if (!userStorage.isFriendExist(userId, friendId)) {
+            userStorage.deleteFriend(userId, friendId);
+        } else {
+            log.error("В списке друзей пользователя c Id: {} отсутствует друг с Id: {}", userId, friendId);
+            throw new NotFoundException("В списке друзей пользователя c Id:" + userId + " отсутствует друг с Id: "
+                    + friendId);
+        }
+    }
+
     //TODO: GET /users/{id}/friends — возвращаем список пользователей, являющихся его друзьями.
+    public Collection<User> getFriends(Long userId) {
+        userExist(userId);
+        return userStorage.getFriends(userId);
+    }
+
     //TODO: GET /users/{id}/friends/common/{otherId} — список друзей, общих с другим пользователем.
+    public Collection<User> getCommonFriends(Long userId, Long otherUserId) {
+        userExist(userId);
+        userExist(otherUserId);
+        return userStorage.getCommonFriends(userId, otherUserId);
+    }
 
+    //Проверить наличие пользователя в хранилище
+    private void userExist(Long userId) {
+        if (userStorage.getUserById(userId).isEmpty()) {
+            log.error("Пользователь с Id: {} не найден в системе.", userId);
+            throw new NotFoundException("Пользователь с Id: " + userId + " не найден в системе.");
+        }
+    }
 
-    //Проверить, существует ли пользователь
+    //Проверить пользователя на уникальность
     private void isUserUnique(String login, String email, Long id) {
         List<User> users = new ArrayList<>(userStorage.getUsers());
         for (User userList : users) {

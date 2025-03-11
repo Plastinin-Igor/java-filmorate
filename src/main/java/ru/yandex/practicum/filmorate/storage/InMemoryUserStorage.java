@@ -50,8 +50,8 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User getUserById(Long userId) {
-        return users.get(userId);
+    public Optional<User> getUserById(Long userId) {
+        return Optional.of(users.get(userId));
     }
 
     @Override
@@ -99,4 +99,11 @@ public class InMemoryUserStorage implements UserStorage {
             return Collections.emptyList();
         }
     }
+
+    @Override
+    public boolean isFriendExist(Long userId, Long friendId) {
+        return friends.containsKey(userId) && friends.get(userId).contains(friendId);
+    }
+
+
 }
