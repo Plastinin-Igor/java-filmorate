@@ -52,8 +52,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film getFilmById(Long filmId) {
-        return films.get(filmId);
+    public Optional<Film> getFilmById(Long filmId) {
+        return Optional.ofNullable(films.get(filmId));
     }
 
     @Override
@@ -82,5 +82,16 @@ public class InMemoryFilmStorage implements FilmStorage {
         List<Film> filmOrderRate = new ArrayList<>(films.values());
         Collections.sort(filmOrderRate, Comparator.comparing(Film::getRating));
         return filmOrderRate.subList(0, Math.min(10, filmOrderRate.size()));
+    }
+
+
+    @Override
+    public boolean isFilmExists(Long filmId) {
+        return films.containsKey(filmId);
+    }
+
+    @Override
+    public boolean isLikeExists(Long filmId, Long userId) {
+        return likes.containsKey(filmId) && likes.get(filmId).contains(userId);
     }
 }

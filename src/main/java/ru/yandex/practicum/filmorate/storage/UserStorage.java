@@ -7,9 +7,9 @@ import java.util.Optional;
 
 public interface UserStorage {
 
-    void addUser(User user);
+    User addUser(User user);
 
-    void updateUser(User user);
+    User updateUser(User user);
 
     void deleteUser(Long userId);
 
@@ -21,10 +21,11 @@ public interface UserStorage {
 
     void deleteFriend(Long userId, Long friendId);
 
-    boolean isFriendExist(Long userId, Long friendId);
-
     Collection<User> getFriends(Long userId);
 
     Collection<User> getCommonFriends(Long userId, Long otherUserId);
 
+    boolean isUserExists(Long userId);
+
+    boolean isFriendExist(Long userId, Long friendId);
 }

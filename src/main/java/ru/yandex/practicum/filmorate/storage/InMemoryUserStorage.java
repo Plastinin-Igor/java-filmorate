@@ -27,17 +27,19 @@ public class InMemoryUserStorage implements UserStorage {
         return ++currentMaxId;
     }
 
-    public void addUser(User user) {
+    public User addUser(User user) {
         user.setId(getNextId());
         users.put(user.getId(), user);
+        return user;
     }
 
-    public void updateUser(User newUser) {
+    public User updateUser(User newUser) {
         User oldUser = users.get(newUser.getId());
         oldUser.setName(newUser.getName());
         oldUser.setLogin(newUser.getLogin());
         oldUser.setEmail(newUser.getEmail());
         oldUser.setBirthday(newUser.getBirthday());
+        return newUser;
     }
 
     public void deleteUser(Long userId) {
@@ -51,22 +53,32 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Optional<User> getUserById(Long userId) {
-        return Optional.of(users.get(userId));
+        return Optional.ofNullable(users.get(userId));
     }
 
     @Override
     public void addFriends(Long userId, Long friendId) {
+        //Если Лена стала другом Саши ...
         if (!friends.containsKey(userId)) {
             friends.put(userId, new HashSet<>());
             friends.get(userId).add(friendId);
         } else {
             friends.get(userId).add(friendId);
         }
+        //...то это значит, что Саша теперь друг Лены
+        if (!friends.containsKey(friendId)) {
+            friends.put(friendId, new HashSet<>());
+            friends.get(friendId).add(userId);
+        } else {
+            friends.get(friendId).add(userId);
+        }
+
     }
 
     @Override
     public void deleteFriend(Long userId, Long friendId) {
-        friends.get(userId).remove(friendId);
+        friends.get(userId).remove(friendId); //Если Лена перестала быть другом Саши ...
+        friends.get(friendId).remove(userId); //...то это значит, что Саша теперь тоже не дружит с Леной
     }
 
     @Override
@@ -98,6 +110,11 @@ public class InMemoryUserStorage implements UserStorage {
         } else {
             return Collections.emptyList();
         }
+    }
+
+    @Override
+    public boolean isUserExists(Long userId) {
+        return users.containsKey(userId);
     }
 
     @Override

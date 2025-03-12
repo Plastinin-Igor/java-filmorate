@@ -1,21 +1,78 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
+
+import java.util.Collection;
+import java.util.Optional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class FilmService {
+
     private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
 
-    //TODO: добавление и удаление лайка, вывод 10 наиболее популярных фильмов по количеству лайков
-    //TODO: сервисы зависят от интерфейсов классов-хранилищ, а не их реализаций
+    //Добавление фильм
+    public Film addFilm(Film film) {
+        return filmStorage.addFilm(film);
+    }
 
-    //TODO: PUT /films/{id}/like/{userId} — пользователь ставит лайк фильму.
+    //Изменение фильма
+    public Film updateFilm(Film newFilm) {
+        filmExists(newFilm.getId());
+        return filmStorage.updateFilm(newFilm);
+    }
+
+    //Удаление фильма
+    public void deleteFilm(Long filmId) {
+        filmExists(filmId);
+        filmStorage.deleteFilm(filmId);
+    }
+
+    //Список всех фильмов
+    public Collection<Film> getFilms() {
+        return filmStorage.getFilms();
+    }
+
+    //Получение фильма по id
+    public Optional<Film> getFilmById(Long filmId) {
+        filmExists(filmId);
+        return filmStorage.getFilmById(filmId);
+    }
+
+    //Пользователь ставит лайк фильму.
+    public void addLike(Long filmId, Long userId) {
+        filmExists(filmId);
+        userStorage.isUserExists(userId);
+        filmStorage.addLike(filmId, userId);
+    }
+
     //TODO: DELETE /films/{id}/like/{userId} — пользователь удаляет лайк.
     //TODO: GET /films/popular?count={count} — возвращает список из первых count фильмов по количеству лайков.
     // Если значение параметра count не задано, верните первые 10
 
+
+    //Проверить наличие фильма в хранилище
+    private void filmExists(Long id) {
+        if (!filmStorage.isFilmExists(id)) {
+            log.error("Фильм с Id: {} не найден в системе.", id);
+            throw new NotFoundException("Фильм с Id: " + id + " не найден в системе.");
+        }
+    }
+
+    //Проверить наличие лайка в хранилище
+    private void likeExists(Long filmId, Long userId) {
+        if (!filmStorage.isLikeExists(filmId, userId)) {
+            log.error("Лайк пользователя {} для фильма {} не найден.", filmId, userId);
+            throw new NotFoundException("Лайк пользователя " + filmId + " для фильма " + userId + " не найден.");
+        }
+    }
 
 }
