@@ -21,7 +21,7 @@ public interface FilmStorage {
 
     void deleteLike(Long filmId, Long userId);
 
-    Collection<Film> getTopPopularFilms();
+    Collection<Film> getTopPopularFilms(int count);
 
     boolean isFilmExists(Long filmId);
 

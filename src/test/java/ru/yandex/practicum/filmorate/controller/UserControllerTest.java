@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -24,7 +26,9 @@ class UserControllerTest {
             .birthday(LocalDate.of(1984, 8, 12))
             .build();
 
-    private final UserController controller = new UserController();
+    private final UserStorage userStorage = new InMemoryUserStorage();
+    private final UserService userService = new UserService(userStorage);
+    private final UserController controller = new UserController(userService);
 
     private void validate(User user) {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();

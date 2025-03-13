@@ -16,14 +16,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         likes = new HashMap<>();
     }
 
-    private long getNextId() {
-        long currentMaxId = films.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
-    }
 
     public Film addFilm(Film film) {
         film.setId(getNextId());
@@ -58,7 +50,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void addLike(Long filmId, Long userId) {
-        if (likes.containsKey(filmId)) {
+        if (!likes.containsKey(filmId)) {
             likes.put(filmId, new HashSet<>());
             likes.get(filmId).add(userId);
             Film film = films.get(filmId);
@@ -78,10 +70,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getTopPopularFilms() {
+    public Collection<Film> getTopPopularFilms(int count) {
         List<Film> filmOrderRate = new ArrayList<>(films.values());
         Collections.sort(filmOrderRate, Comparator.comparing(Film::getRating));
-        return filmOrderRate.subList(0, Math.min(10, filmOrderRate.size()));
+        return filmOrderRate.subList(0, Math.min(count, filmOrderRate.size()));
     }
 
 
@@ -94,4 +86,14 @@ public class InMemoryFilmStorage implements FilmStorage {
     public boolean isLikeExists(Long filmId, Long userId) {
         return likes.containsKey(filmId) && likes.get(filmId).contains(userId);
     }
+
+    private long getNextId() {
+        long currentMaxId = films.keySet()
+                .stream()
+                .mapToLong(id -> id)
+                .max()
+                .orElse(0);
+        return ++currentMaxId;
+    }
+
 }

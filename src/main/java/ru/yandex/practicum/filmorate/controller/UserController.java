@@ -20,6 +20,8 @@ import java.util.Collection;
 public class UserController {
     private final UserService userService;
 
+    //TODO сделать проверки на параметры переменные пути!
+
     @PostMapping("users")
     public User create(@Valid @RequestBody User user) {
         User userLocal = userService.addUser(user);

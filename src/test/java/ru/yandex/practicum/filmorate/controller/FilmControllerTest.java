@@ -5,6 +5,11 @@ import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.model.Film;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -16,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @Validated
 class FilmControllerTest {
+
     private final Film film = Film.builder()
             .id(1L)
             .name("Интерстеллар")
@@ -24,8 +30,10 @@ class FilmControllerTest {
             .releaseDate(LocalDate.of(2014, 10, 26))
             .duration(169)
             .build();
-
-    private final FilmController controller = new FilmController();
+    private final FilmStorage filmStorage = new InMemoryFilmStorage();
+    private final UserStorage userStorage = new InMemoryUserStorage();
+    private final FilmService filmService = new FilmService(filmStorage, userStorage);
+    private final FilmController controller = new FilmController(filmService);
 
 
     private void validate(Film film) {

@@ -49,14 +49,25 @@ public class FilmService {
 
     //Пользователь ставит лайк фильму.
     public void addLike(Long filmId, Long userId) {
+
+        if (!userStorage.isUserExists(userId)) {
+            log.error("Пользователь с Id: {} не найден в системе.", userId);
+            throw new NotFoundException("Пользователь с Id: " + userId + " не найден в системе.");
+        }
         filmExists(filmId);
-        userStorage.isUserExists(userId);
         filmStorage.addLike(filmId, userId);
     }
 
-    //TODO: DELETE /films/{id}/like/{userId} — пользователь удаляет лайк.
-    //TODO: GET /films/popular?count={count} — возвращает список из первых count фильмов по количеству лайков.
-    // Если значение параметра count не задано, верните первые 10
+    // Пользователь удаляет лайк.
+    public void deleteLike(Long filmId, Long userId) {
+        likeExists(filmId, userId);
+        filmStorage.deleteLike(filmId, userId);
+    }
+
+    //Возвращает список из первых count фильмов по количеству лайков.
+    public Collection<Film> getTopPopularFilms(int count) {
+        return filmStorage.getTopPopularFilms(count);
+    }
 
 
     //Проверить наличие фильма в хранилище
