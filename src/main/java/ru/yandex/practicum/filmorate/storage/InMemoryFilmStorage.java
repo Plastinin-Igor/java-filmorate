@@ -49,12 +49,12 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void addLike(Long filmId, Long userId) {
-        if (!likes.containsKey(filmId)) {
-            likes.put(filmId, new HashSet<>());
+        if (likes.containsKey(filmId)) {
             likes.get(filmId).add(userId);
             Film film = films.get(filmId);
             film.setRating(likes.get(filmId).size());
         } else {
+            likes.put(filmId, new HashSet<>());
             likes.get(filmId).add(userId);
             Film film = films.get(filmId);
             film.setRating(likes.get(filmId).size());
@@ -85,6 +85,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public boolean isLikeExists(Long filmId, Long userId) {
         return likes.containsKey(filmId) && likes.get(filmId).contains(userId);
     }
+
 
     private long getNextId() {
         long currentMaxId = films.keySet()

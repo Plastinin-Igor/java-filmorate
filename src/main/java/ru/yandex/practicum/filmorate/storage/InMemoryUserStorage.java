@@ -1,11 +1,14 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
 
 @Component
+@Slf4j
 public class InMemoryUserStorage implements UserStorage {
 
     //Список пользователей
@@ -16,15 +19,6 @@ public class InMemoryUserStorage implements UserStorage {
     public InMemoryUserStorage() {
         users = new HashMap<>();
         friends = new HashMap<>();
-    }
-
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
     }
 
     public User addUser(User user) {
@@ -59,20 +53,19 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public void addFriends(Long userId, Long friendId) {
         //Если Лена стала другом Саши ...
-        if (!friends.containsKey(userId)) {
-            friends.put(userId, new HashSet<>());
+        if (friends.containsKey(userId)) {
             friends.get(userId).add(friendId);
         } else {
+            friends.put(userId, new HashSet<>());
             friends.get(userId).add(friendId);
         }
         //...то это значит, что Саша теперь друг Лены
-        if (!friends.containsKey(friendId)) {
-            friends.put(friendId, new HashSet<>());
+        if (friends.containsKey(friendId)) {
             friends.get(friendId).add(userId);
         } else {
+            friends.put(friendId, new HashSet<>());
             friends.get(friendId).add(userId);
         }
-
     }
 
     @Override
@@ -97,10 +90,11 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Collection<User> getCommonFriends(Long userId, Long otherUserId) {
-        if (users.containsKey(userId) && users.containsKey(otherUserId)) {
+        if (friends.containsKey(userId) && friends.containsKey(otherUserId)) {
             Set<Long> userFriendsIds = friends.get(userId);
             Set<Long> otherUserFriendsId = friends.get(otherUserId);
             Collection<User> commonFriends = new ArrayList<>();
+
             for (Long friendId : userFriendsIds) {
                 if (otherUserFriendsId.contains(friendId)) {
                     commonFriends.add(users.get(friendId));
@@ -122,5 +116,31 @@ public class InMemoryUserStorage implements UserStorage {
         return friends.containsKey(userId) && friends.get(userId).contains(friendId);
     }
 
+    @Override
+    public void isUserUnique(String login, String email, Long id) {
+        for (User userList : users.values()) {
+            if (userList.getId() != id) {
+                if (userList.getLogin().equals(login)) {
+                    log.error("Пользователь с логином {} уже зарегистрирован в системе.", login);
+                    throw new DuplicatedDataException("Пользователь с логином " + login
+                            + " уже зарегистрирован в системе.");
+                }
+                if (userList.getEmail().equals(email)) {
+                    log.error("Пользователь с email {} уже зарегистрирован в системе.", email);
+                    throw new DuplicatedDataException("Пользователь с email " + email
+                            + " уже зарегистрирован в системе.");
+                }
+            }
+        }
+    }
+
+    private long getNextId() {
+        long currentMaxId = users.keySet()
+                .stream()
+                .mapToLong(id -> id)
+                .max()
+                .orElse(0);
+        return ++currentMaxId;
+    }
 
 }

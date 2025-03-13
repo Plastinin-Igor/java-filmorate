@@ -3,14 +3,11 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -20,7 +17,7 @@ public class UserService {
 
     // Добавление пользователя
     public User addUser(User user) {
-        isUserUnique(user.getLogin(), user.getEmail(), user.getId());
+        userStorage.isUserUnique(user.getLogin(), user.getEmail(), user.getId());
         user.setName(checkName(user.getName(), user.getLogin()));
         return userStorage.addUser(user);
     }
@@ -84,25 +81,6 @@ public class UserService {
         if (!userStorage.isUserExists(userId)) {
             log.error("Пользователь с Id: {} не найден в системе.", userId);
             throw new NotFoundException("Пользователь с Id: " + userId + " не найден в системе.");
-        }
-    }
-
-    //Проверить пользователя на уникальность
-    private void isUserUnique(String login, String email, Long id) {
-        List<User> users = new ArrayList<>(userStorage.getUsers());
-        for (User userList : users) {
-            if (userList.getId() != id) {
-                if (userList.getLogin().equals(login)) {
-                    log.error("Пользователь с логином {} уже зарегистрирован в системе.", login);
-                    throw new DuplicatedDataException("Пользователь с логином " + login
-                            + " уже зарегистрирован в системе.");
-                }
-                if (userList.getEmail().equals(email)) {
-                    log.error("Пользователь с email {} уже зарегистрирован в системе.", email);
-                    throw new DuplicatedDataException("Пользователь с email " + email
-                            + " уже зарегистрирован в системе.");
-                }
-            }
         }
     }
 

@@ -28,4 +28,6 @@ public interface UserStorage {
     boolean isUserExists(Long userId);
 
     boolean isFriendExist(Long userId, Long friendId);
+
+    void isUserUnique(String login, String email, Long id);
 }
