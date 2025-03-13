@@ -1,112 +1,80 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
-@Service
 @Validated
 @RestController
-@RequestMapping("users")
+@RequiredArgsConstructor
 public class UserController {
-    private final Map<Long, User> users = new HashMap<>();
+    private final UserService userService;
 
-    // Генерация уникального идентификатора
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    @PostMapping("users")
+    public User create(@Valid @RequestBody User user) {
+        User userLocal = userService.addUser(user);
+        log.info("Пользователь с Id: {} успешно добавлен в систему.", user.getId());
+        return userLocal;
     }
 
-    //Проверить, существует ли пользователь
-    private boolean isUserUnique(String login, String email, Long id) {
-        for (User userList : users.values()) {
-            if (userList.getId() != id) {
-                if (userList.getLogin().equals(login)) {
-                    log.error("Пользователь с логином {} уже зарегистрирован в системе.", login);
-                    return false;
-                }
-                if (userList.getEmail().equals(email)) {
-                    log.error("Пользователь с email {} уже зарегистрирован в системе.", email);
-                    return false;
-                }
-            }
-        }
-        return true;
+    @PutMapping("users")
+    public User update(@Valid @RequestBody User newUser) {
+        User user = userService.updateUser(newUser);
+        log.info("Пользователь {} с Id: {} успешно обновлен в системе.", newUser.getLogin(), newUser.getId());
+        return user;
     }
 
-    // Если имя пользователя не задано - используем логин
-    private String checkName(String name, String login) {
-        return name != null ? name : login;
-    }
-
-
-    /**
-     * Добавление пользователя
-     *
-     * @param user User
-     * @return ResponseEntity User
-     */
-    @PostMapping
-    public ResponseEntity<User> create(@Valid @RequestBody User user) {
-        if (isUserUnique(user.getLogin(), user.getEmail(), user.getId())) {
-            user.setId(getNextId());
-            user.setName(checkName(user.getName(), user.getLogin()));
-            users.put(user.getId(), user);
-            log.info("Пользователь {} (id: {}) добавлен в систему.", user.getLogin(), user.getId());
-            return ResponseEntity.ok(user);
-        } else {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    /**
-     * Обновление данных пользователя
-     *
-     * @param newUser User
-     * @return ResponseEntity User
-     */
-    @PutMapping
-    public ResponseEntity<User> update(@Valid @RequestBody User newUser) {
-        if (users.containsKey(newUser.getId())) {
-            User oldUser = users.get(newUser.getId());
-            if (isUserUnique(newUser.getLogin(), newUser.getEmail(), newUser.getId())) {
-                oldUser.setName(checkName(newUser.getName(), newUser.getLogin()));
-                oldUser.setLogin(newUser.getLogin());
-                oldUser.setEmail(newUser.getEmail());
-                oldUser.setBirthday(newUser.getBirthday());
-                log.info("Пользователь {} (id: {}) успешно обновлен в системе.", oldUser.getLogin(), oldUser.getId());
-                return ResponseEntity.ok(oldUser);
-            } else {
-                return ResponseEntity.badRequest().build();
-            }
-        } else {
-            log.error("Пользователь с id {} не найден в системе.", newUser.getId());
-            return ResponseEntity.internalServerError().body(newUser);
-        }
-    }
-
-    /**
-     * Получение списка пользователей
-     *
-     * @return Collection User
-     */
-    @GetMapping
+    @GetMapping("users")
     public Collection<User> findAll() {
-        log.info("Выполнен запрос к списку пользователей. В системе зарегистрировано пользователей: {}.", users.size());
-        return users.values();
+        log.info("Выполнен запрос к списку пользователей. В системе зарегистрировано пользователей: {}.",
+                userService.getUsers().size());
+        return userService.getUsers();
     }
+
+    @GetMapping("users/{userId}")
+    public User getUserById(@PathVariable long userId) {
+        return userService.getUserById(userId);
+    }
+
+
+    //Добавление в друзья.
+    @PutMapping("/users/{id}/friends/{friendId}")
+    public void addFriends(@PathVariable long id,
+                           @PathVariable long friendId) {
+        userService.addFriends(id, friendId);
+        log.info("Пользователь c Id: {} добавил в друзья пользователя с Id: {}.", id, friendId);
+    }
+
+    //Удаление из друзей.
+    @DeleteMapping("/users/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable long id,
+                             @PathVariable long friendId) {
+        userService.deleteFriend(id, friendId);
+        log.info("Пользователь c Id: {} удалил из друзей пользователя с Id: {}.", id, friendId);
+    }
+
+    //Возвращаем список пользователей, являющихся его друзьями.
+    @GetMapping("/users/{id}/friends")
+    public Collection<User> getFriends(@PathVariable long id) {
+        log.info("Запросили список друзей для пользователя c Id: {}.", id);
+        return userService.getFriends(id);
+    }
+
+    //Список друзей, общих с другим пользователем.
+    @GetMapping("/users/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(@PathVariable long id,
+                                             @PathVariable long otherId) {
+        log.info("Запросили список общих друзей для пользователя с Id: {} и пользователя с Id: {}.",
+                id, otherId);
+        return userService.getCommonFriends(id, otherId);
+    }
+
 }
