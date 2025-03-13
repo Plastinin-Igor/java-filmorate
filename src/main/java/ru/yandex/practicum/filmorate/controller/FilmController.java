@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.ParameterNotValidException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +21,6 @@ import java.util.Collection;
 public class FilmController {
 
     private final FilmService filmService;
-
-    //TODO сделать проверки на параметры переменные пути!
 
     @PostMapping("films")
     public Film create(@Valid @RequestBody Film film) {
@@ -67,18 +66,15 @@ public class FilmController {
     }
 
     //Возвращает список из первых count фильмов по количеству лайков.
-    @GetMapping("/films/popular?count={count}")
-    public Collection<Film> getTopPopularFilms(@RequestParam(defaultValue = "10") int count) {
+    @GetMapping("/films/popular")
+    public Collection<Film> getTopPopularFilms(@RequestParam(defaultValue = "10") Integer count) {
+        if (count <= 0) {
+            log.error("Параметр count имеет отрицательное значение");
+            throw new ParameterNotValidException("Count", "Параметр имеет отрицательное значение.");
+        }
+
         log.info("Выполнен запрос топ-{} фильмов.", count);
         return filmService.getTopPopularFilms(count);
     }
-
-    //Возвращает список из первых count фильмов по количеству лайков.
-    @GetMapping("/films/popular")
-    public Collection<Film> getTopPopularFilmsWithEmptyParameter() {
-        log.info("Выполнен запрос топ-10 фильмов.");
-        return filmService.getTopPopularFilms(10);
-    }
-
 
 }
