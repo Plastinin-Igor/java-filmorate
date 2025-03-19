@@ -35,18 +35,16 @@
 | rating     | rating               | varchar(15)  | Рейтинг                               |
 | rating     | description          | varchar(50)  | Описание                              |
 
-
-
 ## Примеры запросов
 
 - Список фильмов с рейтингом
 ```
 select f."name",
-	   f.description,
-	   f.releasedate,
-	   f.duration,
-	   r.rating,
-	   r.description rating_description
+       f.description,
+       f.releasedate,
+       f.duration,
+       r.rating,
+       r.description rating_description
   from film f 
   inner join rating r on (r.rating_id = f.film_id);
   ```
@@ -54,8 +52,8 @@ select f."name",
 ```
 select g.genre_name,
        r.rating,
-	   f."name" film_name,
-	   f.description rating_description
+       f."name" film_name,
+       f.description rating_description
   from film f 
   inner join rating r on (r.rating_id = f.film_id)
   inner join film_genre fg on (fg.film_id = f.film_id)
