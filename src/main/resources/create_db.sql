@@ -1,7 +1,5 @@
 -- filmorate."user" definition
-
 -- Drop table
-
 -- DROP TABLE filmorate."user";
 
 CREATE TABLE filmorate."user" (
@@ -25,9 +23,7 @@ COMMENT ON COLUMN filmorate."user".birthday IS 'Дата рождения';
 
 
 -- filmorate.genre definition
-
 -- Drop table
-
 -- DROP TABLE filmorate.genre;
 
 CREATE TABLE filmorate.genre (
@@ -44,9 +40,7 @@ COMMENT ON COLUMN filmorate.genre.genre_name IS 'Жанр';
 
 
 -- filmorate.rating definition
-
 -- Drop table
-
 -- DROP TABLE filmorate.rating;
 
 CREATE TABLE filmorate.rating (
@@ -65,9 +59,7 @@ COMMENT ON COLUMN filmorate.rating.description IS 'Описание';
 
 
 -- filmorate.film definition
-
 -- Drop table
-
 -- DROP TABLE filmorate.film;
 
 CREATE TABLE filmorate.film (
@@ -93,9 +85,7 @@ COMMENT ON COLUMN filmorate.film.rating IS 'Рейтинг';
 
 
 -- filmorate.likes definition
-
 -- Drop table
-
 -- DROP TABLE filmorate.likes;
 
 CREATE TABLE filmorate.likes (
