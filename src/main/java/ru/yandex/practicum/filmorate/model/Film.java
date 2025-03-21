@@ -26,11 +26,12 @@ public class Film {
     @NotNull(message = "Дата релиза должна быть задана")
     private LocalDate releaseDate;
 
-    // Duration duration;
     @Positive(message = "Продолжительность фильма не может быть меньше нуля")
     private int duration;
 
     private int rating;
+
+    private Rating mpa;
 
     @AssertTrue(message = "Дата релиза не может быть раньше 28 декабря 1895 года")
     public boolean isReleaseDateValid() {
