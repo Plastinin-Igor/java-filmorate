@@ -5,6 +5,7 @@ import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.model.Film;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
@@ -29,7 +30,9 @@ class FilmControllerTest {
                     "в путешествие, чтобы найти планету с подходящими для человечества условиями.")
             .releaseDate(LocalDate.of(2014, 10, 26))
             .duration(169)
+            .mpa(Rating.PG)
             .build();
+
     private final FilmStorage filmStorage = new InMemoryFilmStorage();
     private final UserStorage userStorage = new InMemoryUserStorage();
     private final FilmService filmService = new FilmService(filmStorage, userStorage);
@@ -51,7 +54,7 @@ class FilmControllerTest {
         Film thisFilm = new Film(1L, "Интерстеллар",
                 "Коллектив исследователей и учёных отправляется сквозь червоточину в путешествие, " +
                         "чтобы найти планету с подходящими для человечества условиями.",
-                LocalDate.of(2014, 10, 26), 169, 0);
+                LocalDate.of(2014, 10, 26), 169, 0, Rating.PG);
 
         controller.create(thisFilm);
         assertEquals(film, thisFilm);
@@ -143,7 +146,7 @@ class FilmControllerTest {
         Film thisFilm = new Film(1L, "Интерстеллар",
                 "Фильм, вдохновленный идеями физика Кипа Торна, исследует темы выживания человечества, " +
                         "родительской любви и парадоксов времени через призму релятивистской физики",
-                LocalDate.of(2014, 10, 26), 169, 0);
+                LocalDate.of(2014, 10, 26), 169, 0, Rating.PG);
 
         controller.create(film);
         controller.update(thisFilm);

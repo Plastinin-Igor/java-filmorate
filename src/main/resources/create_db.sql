@@ -1,7 +1,5 @@
 -- filmorate."user" definition
-
 -- Drop table
-
 -- DROP TABLE filmorate."user";
 
 CREATE TABLE filmorate."user" (
@@ -17,7 +15,6 @@ CREATE TABLE filmorate."user" (
 COMMENT ON TABLE filmorate."user" IS 'Пользователи';
 
 -- Column comments
-
 COMMENT ON COLUMN filmorate."user".user_id IS 'Уникальный идентификатор пользователя';
 COMMENT ON COLUMN filmorate."user".email IS 'Адрес электронной почты';
 COMMENT ON COLUMN filmorate."user".login IS 'Логин пользователя';
@@ -26,9 +23,7 @@ COMMENT ON COLUMN filmorate."user".birthday IS 'Дата рождения';
 
 
 -- filmorate.genre definition
-
 -- Drop table
-
 -- DROP TABLE filmorate.genre;
 
 CREATE TABLE filmorate.genre (
@@ -40,15 +35,12 @@ CREATE TABLE filmorate.genre (
 COMMENT ON TABLE filmorate.genre IS 'Жанры';
 
 -- Column comments
-
 COMMENT ON COLUMN filmorate.genre.genre_id IS 'Идентификатор жанра';
 COMMENT ON COLUMN filmorate.genre.genre_name IS 'Жанр';
 
 
 -- filmorate.rating definition
-
 -- Drop table
-
 -- DROP TABLE filmorate.rating;
 
 CREATE TABLE filmorate.rating (
@@ -61,16 +53,13 @@ CREATE TABLE filmorate.rating (
 COMMENT ON TABLE filmorate.rating IS 'Рейтинг Ассоциации кинокомпаний (Motion Picture Association - МРА)';
 
 -- Column comments
-
 COMMENT ON COLUMN filmorate.rating.rating_id IS 'Идентификатор рейтинга';
 COMMENT ON COLUMN filmorate.rating.rating IS 'Рейтинг';
 COMMENT ON COLUMN filmorate.rating.description IS 'Описание';
 
 
 -- filmorate.film definition
-
 -- Drop table
-
 -- DROP TABLE filmorate.film;
 
 CREATE TABLE filmorate.film (
@@ -87,7 +76,6 @@ CREATE TABLE filmorate.film (
 COMMENT ON TABLE filmorate.film IS 'Фильмы';
 
 -- Column comments
-
 COMMENT ON COLUMN filmorate.film.film_id IS 'Уникальный идентификатор фильма';
 COMMENT ON COLUMN filmorate.film."name" IS 'Название фильма';
 COMMENT ON COLUMN filmorate.film.description IS 'Описание фильма';
@@ -97,9 +85,7 @@ COMMENT ON COLUMN filmorate.film.rating IS 'Рейтинг';
 
 
 -- filmorate.likes definition
-
 -- Drop table
-
 -- DROP TABLE filmorate.likes;
 
 CREATE TABLE filmorate.likes (
@@ -113,7 +99,6 @@ CREATE TABLE filmorate.likes (
 COMMENT ON TABLE filmorate.likes IS 'Лайки';
 
 -- Column comments
-
 COMMENT ON COLUMN filmorate.likes.likes_id IS 'Уникальный идентификатор';
 COMMENT ON COLUMN filmorate.likes.film_id IS 'Идентификатор фильма';
 COMMENT ON COLUMN filmorate.likes.user_id IS 'Идентификатор пользователя';
@@ -137,7 +122,6 @@ CREATE TABLE filmorate.friends (
 COMMENT ON TABLE filmorate.friends IS 'Друзья';
 
 -- Column comments
-
 COMMENT ON COLUMN filmorate.friends.id IS 'Уникальный идентификатор';
 COMMENT ON COLUMN filmorate.friends.user_id IS 'Пользователь';
 COMMENT ON COLUMN filmorate.friends.friend_id IS 'Друг';
@@ -162,7 +146,6 @@ CREATE TABLE filmorate.film_genre (
 COMMENT ON TABLE filmorate.film_genre IS 'Жанры фильмов';
 
 -- Column comments
-
 COMMENT ON COLUMN filmorate.film_genre.id IS 'Уникальный идентификатор';
 COMMENT ON COLUMN filmorate.film_genre.film_id IS 'Фильм';
 COMMENT ON COLUMN filmorate.film_genre.genre_id IS 'Жанр';

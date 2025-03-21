@@ -10,10 +10,12 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Long, Film> films;
     private final Map<Long, Set<Long>> likes;
+    private final Map<Long, Set<String>> filmGenre;
 
     public InMemoryFilmStorage() {
         films = new HashMap<>();
         likes = new HashMap<>();
+        filmGenre = new HashMap<>();
     }
 
     public Film addFilm(Film film) {
@@ -75,7 +77,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         return filmOrderRate.subList(0, Math.min(count, filmOrderRate.size()));
     }
 
-
     @Override
     public boolean isFilmExists(Long filmId) {
         return films.containsKey(filmId);
@@ -86,6 +87,18 @@ public class InMemoryFilmStorage implements FilmStorage {
         return likes.containsKey(filmId) && likes.get(filmId).contains(userId);
     }
 
+    public void addGenreToFilm(Long filmId, String genre) {
+        if (filmGenre.containsKey(filmId)) {
+            filmGenre.get(filmId).add(genre);
+        } else {
+            filmGenre.put(filmId, new HashSet<>());
+            filmGenre.get(filmId).add(genre);
+        }
+    }
+
+    public void deleteGenreFromFilm(Long filmId, String genre) {
+        filmGenre.get(filmId).remove(genre);
+    }
 
     private long getNextId() {
         long currentMaxId = films.keySet()
