@@ -1,4 +1,4 @@
-MERGE INTO PUBLIC."user" (USER_ID, email,login,NAME,birthday) VALUES
+MERGE INTO users (USER_ID, email,login,NAME,birthday) VALUES
 	 (1, 'igor-plastinin@yandex.ru','Plastinin','Plastinin Igor','1984-08-12'),
 	 (2, 'ivanov.i@mail.ru','Ivanov','Ivanov Ivan','1991-12-02');
 
