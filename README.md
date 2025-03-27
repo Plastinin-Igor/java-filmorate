@@ -39,7 +39,7 @@
 
 - Список фильмов с рейтингом
 ```
-select f."name",
+select f.name,
        f.description,
        f.releasedate,
        f.duration,
@@ -52,7 +52,7 @@ select f."name",
 ```
 select g.genre_name,
        r.rating,
-       f."name" film_name,
+       f.name film_name,
        f.description rating_description
   from film f 
   inner join rating r on (r.rating_id = f.film_id)
@@ -61,7 +61,7 @@ select g.genre_name,
 ```
 - Количество лайков у фильма
 ```
-select f."name" film_name,
+select f.name film_name,
        count(l.film_id) likes
    from film f 
  inner join likes l on (l.film_id = f.film_id)  
@@ -69,13 +69,13 @@ select f."name" film_name,
 ```
 - Список пользователей
 ```
-select * from filmorate.user;
+select * from "user";
 ```
 - Список друзей
 ```
 select u.login user_name,
        u2.login friend_name 
-  from filmorate.user u
+  from "user" u
  inner join friends f on (u.user_id = f.user_id) 
- inner join filmorate.user u2 on (u2.user_id = f.friend_id);
+ inner join "user" u2 on (u2.user_id = f.friend_id);
 ```
