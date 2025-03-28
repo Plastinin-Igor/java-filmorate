@@ -35,8 +35,78 @@
 | rating     | rating               | varchar(15)  | Рейтинг                               |
 | rating     | description          | varchar(50)  | Описание                              |
 
-## Примеры запросов
+## ЗАПРОСЫ
 
+### Примеры запросов для сущностей "Пользователи" и "Друзья" 
+- Список пользователй
+```
+select * from users;
+```
+- Найти пользователя по id
+```
+select * from users where user_id = :id;
+```
+- Найти пользователя по email
+```
+select * from users where email = :email; 
+```
+- Найти пользователя по логину
+```
+select * from users where login = :login;
+```
+- Удаление пользователя
+```
+delete from users where id = :id;
+```
+- Добавление нового пользователя
+```
+insert into users (email, login, name, birthday) 
+values (:email, :login, :name, :birthday);
+```
+- Исправление пользователя
+```
+update users
+   set email = :email,
+       login = :login,
+       name = :name,
+       birthday = :birthday
+ where user_id = :id;
+```
+- Добавление пользователя в друзья
+```
+insert into friends (user_id, friend_id) values(:user_id, :friend_id);
+```
+- Удаление пользователя из друзей
+```
+delete friends where user_id = :user_id and friend_id = :friend_id;
+```
+
+- Список друзей пользователя 
+```
+select * 
+  from users u
+ inner join friends f on (u.user_id = f.friend_id)
+ where f.user_id = :id;
+```
+- Поиск пользователя в друзьях
+```
+select * 
+ from users u
+inner join friends f on (u.user_id = f.friend_id)
+where f.user_id = :user_id
+  and f.friend_id = :user_id;
+```
+- Поиск общих друзей
+```
+select u.*
+  from users u
+ inner join friends f on (u.user_id = f.friend_id)
+ inner join friends f2 on (u.user_id = f2.friend_id and f.friend_id = f2.friend_id)
+ where f.user_id = :user_id_1 
+   and f2.user_id = :user_id_2;
+```
+
+### Примеры запросов для сущностей "Фильмы"
 - Список фильмов с рейтингом
 ```
 select f.name,
@@ -79,3 +149,5 @@ select u.login user_name,
  inner join friends f on (u.user_id = f.user_id) 
  inner join "user" u2 on (u2.user_id = f.friend_id);
 ```
+
+

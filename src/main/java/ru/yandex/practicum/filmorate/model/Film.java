@@ -4,14 +4,17 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 
 /**
  * Film.
  */
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class Film {
 
@@ -29,9 +32,12 @@ public class Film {
     @Positive(message = "Продолжительность фильма не может быть меньше нуля")
     private int duration;
 
-    private int rating;
+    private int rating; //TODO убрать это поле и переделать подсчет лайков у фильма
 
-    private Rating mpa;
+    @NotNull(message = "Рейтинг фильма должен быть задан")
+    private Rating ratingMpa;
+
+    private LinkedHashSet<Genre> genres;
 
     @AssertTrue(message = "Дата релиза не может быть раньше 28 декабря 1895 года")
     public boolean isReleaseDateValid() {
