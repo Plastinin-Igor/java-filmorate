@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.ParameterNotValidException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -36,15 +37,15 @@ public class FilmController {
     }
 
     @GetMapping("films")
-    public Collection<Film> findAll() {
+    public Collection<FilmDto> findAll() {
         log.info("Выполнен запрос к списку фильмов. Найдено фильмов {}.", filmService.getFilms().size());
         return filmService.getFilms();
     }
 
     @GetMapping("films/{filmId}")
-    public Collection<Film> findById(@PathVariable Long filmId) {
+    public Film findById(@PathVariable Long filmId) {
         log.info("Выполнен запрос к фильму с id {}.", filmId);
-        return filmService.getFilms();
+        return filmService.getFilmById(filmId).get();
     }
 
     // Пользователь ставит лайк фильму.

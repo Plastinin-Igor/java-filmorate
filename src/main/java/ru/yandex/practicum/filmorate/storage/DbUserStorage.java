@@ -6,17 +6,18 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 
 @Repository
 @Slf4j
 @Primary
-public class DbUserStorage extends BaseDBStorage implements UserStorage {
+public class DbUserStorage extends BaseDBStorage<User> implements UserStorage {
 
     private static final String FIND_ALL_QUERY = "select * from users";
     private static final String FIND_BY_ID_QUERY = "select * from users where user_id = ?";
@@ -26,10 +27,10 @@ public class DbUserStorage extends BaseDBStorage implements UserStorage {
     private static final String INSERT_FRIEND = "insert into friends (user_id, friend_id) values(?, ?)";
     private static final String DELETE_FRIEND = "delete friends where user_id = ? and friend_id = ?";
     private static final String INSERT_QUERY = """
-            insert into users 
-            (email, login, name, birthday) 
-            values(?, ?, ?, ?)
-            """;
+             insert into users\s
+             (email, login, name, birthday)\s
+             values(?, ?, ?, ?)
+            \s""";
     private static final String UPDATE_QUERY = """
             update users
                set email = ?,
@@ -39,24 +40,24 @@ public class DbUserStorage extends BaseDBStorage implements UserStorage {
              where user_id = ?
             """;
     private static final String FIND_FRIENDS = """
-            select * 
-             from users u
-            inner join friends f on (u.user_id = f.friend_id)
-            where f.user_id = ?
-            """;
+             select *\s
+              from users u
+             inner join friends f on (u.user_id = f.friend_id)
+             where f.user_id = ?
+            \s""";
     private static final String FIND_FRIENDS_ID = """
-            select * 
-             from users u
-            inner join friends f on (u.user_id = f.friend_id)
-            where f.user_id = ?
-              and f.friend_id = ?
-            """;
+             select *\s
+              from users u
+             inner join friends f on (u.user_id = f.friend_id)
+             where f.user_id = ?
+               and f.friend_id = ?
+            \s""";
     private static final String FIND_COMMON_FRIENDS = """
             select u.*
               from users u
              inner join friends f on (u.user_id = f.friend_id)
              inner join friends f2 on (u.user_id = f2.friend_id and f.friend_id = f2.friend_id)
-             where f.user_id = ? 
+             where f.user_id = ?
                and f2.user_id = ?
             """;
 
@@ -127,12 +128,14 @@ public class DbUserStorage extends BaseDBStorage implements UserStorage {
 
     @Override
     public boolean isUserExists(Long userId) {
-        return (!findOne(FIND_BY_ID_QUERY, userId).isEmpty());
+        LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+
+        return (findOne(FIND_BY_ID_QUERY, userId).isPresent());
     }
 
     @Override
     public boolean isFriendExist(Long userId, Long friendId) {
-        return (!findOne(FIND_FRIENDS_ID, userId, friendId).isEmpty());
+        return (findOne(FIND_FRIENDS_ID, userId, friendId).isPresent());
     }
 
     @Override

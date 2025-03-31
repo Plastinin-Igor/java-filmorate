@@ -9,13 +9,10 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class UserDto {
-    private Long id;
-
+public class NewUserRequest {
     @NotNull(message = "Адрес электронной почты должен быть задан")
     @Email(message = "Не является электронной почтой")
     private String email;
-
     @NotBlank(message = "Логин не может быть пустым и содержать пробелы")
     private String login;
 

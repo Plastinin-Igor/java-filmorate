@@ -9,7 +9,8 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class UserDto {
+public class UpdateUserRequest {
+
     private Long id;
 
     @NotNull(message = "Адрес электронной почты должен быть задан")
@@ -24,4 +25,21 @@ public class UserDto {
     @NotNull(message = "Дата рождения должна быть задана")
     @Past(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
+
+    public boolean hasEmail() {
+        return !(email == null || email.isBlank());
+    }
+
+    public boolean hasLogin() {
+        return !(login == null || login.isBlank());
+    }
+
+    public boolean hasName() {
+        return !(name == null || name.isBlank());
+    }
+
+    public boolean hasBirthday() {
+        return !(name == null || name.isBlank());
+    }
+
 }
