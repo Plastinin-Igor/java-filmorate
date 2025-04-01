@@ -4,7 +4,6 @@ import lombok.Data;
 
 @Data
 public class RatingDto {
-    private Long ratingId;
-    private String rating;
-    private String description;
+    private Long id;
+    private String name;
 }

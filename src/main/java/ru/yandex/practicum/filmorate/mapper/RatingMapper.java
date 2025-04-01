@@ -7,19 +7,15 @@ public final class RatingMapper {
 
     public static RatingDto mapToRatingDto(Rating rating) {
         RatingDto dto = new RatingDto();
-        dto.setRatingId(rating.getRatingId());
-        dto.setRating(rating.getRating());
-        dto.setDescription(rating.getDescription());
-
+        dto.setId(rating.getId());
+        dto.setName(rating.getName());
         return dto;
     }
 
     public static Rating mapToRating(RatingDto ratingDto) {
         Rating rating = new Rating();
-        rating.setRatingId(ratingDto.getRatingId());
-        rating.setRating(ratingDto.getRating());
-        rating.setDescription(rating.getDescription());
-
+        rating.setId(ratingDto.getId());
+        rating.setName(ratingDto.getName());
         return rating;
     }
 }

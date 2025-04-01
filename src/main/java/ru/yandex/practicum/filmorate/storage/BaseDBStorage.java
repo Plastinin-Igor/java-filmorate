@@ -48,8 +48,8 @@ public class BaseDBStorage<T> {
     }
 
     //Удаление строки по id
-    protected boolean delete(String query, long id) {
-        int rowDeleted = jdbc.update(query, id);
+    protected boolean delete(String query, Object... params) {
+        int rowDeleted = jdbc.update(query, params);
         return rowDeleted > 0;
     }
 
@@ -68,4 +68,15 @@ public class BaseDBStorage<T> {
         return jdbc.query(query, mapper, params);
     }
 
+    // Вернуть из базы кол-во строк. Запрос с параметрами
+    protected int getCountFromTab(String query, Object... params) {
+        Integer result = jdbc.queryForObject(query, Integer.class, params);
+        return result != null ? result : 0;
+    }
+
+    // Вернуть из базы кол-во строк. Запрос без параметров
+    protected int getCountFromTab(String query) {
+        Integer result = jdbc.queryForObject(query, Integer.class);
+        return result != null ? result : 0;
+    }
 }

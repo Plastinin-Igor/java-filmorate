@@ -25,9 +25,8 @@ public class FilmRowMapper implements RowMapper<Film> {
 
         film.setRating(Rating
                 .builder()
-                .ratingId(resultSet.getLong("rating_id"))
-                .rating(resultSet.getString("rating"))
-                .description(resultSet.getString("rating_description"))
+                .id(resultSet.getLong("rating_id"))
+                .name(resultSet.getString("rating"))
                 .build()
         );
 

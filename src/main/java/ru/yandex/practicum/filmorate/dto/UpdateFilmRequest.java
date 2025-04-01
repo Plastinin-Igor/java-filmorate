@@ -1,14 +1,13 @@
 package ru.yandex.practicum.filmorate.dto;
 
 import jakarta.validation.constraints.*;
-
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
 
 @Data
-public class FilmDto {
+public class UpdateFilmRequest {
     private Long id;
 
     @NotBlank(message = "Название фильма не может быть пустым")
@@ -27,9 +26,30 @@ public class FilmDto {
 
     private LinkedHashSet<GenreDto> genres;
 
+    public boolean hasName() {
+        return !(name == null || name.isBlank());
+    }
+
+    public boolean hasDescription() {
+        return !(description == null || description.isBlank());
+    }
+
+    public boolean hasReleaseDate() {
+        return !(releaseDate == null);
+    }
+
+    public boolean hasMpa() {
+        return !(mpa == null);
+    }
+
+    public boolean hasGenres() {
+        return !(genres == null);
+    }
+
     @AssertTrue(message = "Дата релиза не может быть раньше 28 декабря 1895 года")
     public boolean isReleaseDateValid() {
         LocalDate cinemaBirthday = LocalDate.of(1895, 12, 28);
         return releaseDate.isAfter(cinemaBirthday);
     }
+
 }

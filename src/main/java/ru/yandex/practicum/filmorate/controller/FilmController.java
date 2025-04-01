@@ -5,10 +5,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
+import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.ParameterNotValidException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
@@ -19,19 +24,23 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class FilmController {
 
+    //TODO переделать все на DTO!!!
+    //TODO дописать везде логирование
+
+
     private final FilmService filmService;
 
     @PostMapping("films")
-    public Film create(@Valid @RequestBody Film film) {
-        Film filmLocal = filmService.addFilm(film);
-        log.info("Добавлен фильм {} с идентификатором {}.", film.getName(), film.getId());
+    public FilmDto create(@Valid @RequestBody NewFilmRequest filmRequest) {
+        FilmDto filmLocal = filmService.addFilm(filmRequest);
+        log.info("Добавлен фильм {} с идентификатором {}.", filmLocal.getName(), filmLocal.getId());
         return filmLocal;
     }
 
 
     @PutMapping("films")
-    public Film update(@Valid @RequestBody Film newFilm) {
-        Film film = filmService.updateFilm(newFilm);
+    public FilmDto update(@Valid @RequestBody UpdateFilmRequest filmRequest) {
+        FilmDto film = filmService.updateFilm(filmRequest);
         log.info("Фильм {} (id: {}) изменен.", film.getName(), film.getId());
         return film;
     }
@@ -43,9 +52,10 @@ public class FilmController {
     }
 
     @GetMapping("films/{filmId}")
-    public Film findById(@PathVariable Long filmId) {
+    public FilmDto findById(@PathVariable Long filmId) {
         log.info("Выполнен запрос к фильму с id {}.", filmId);
-        return filmService.getFilmById(filmId).get();
+        FilmDto filmDto = FilmMapper.mapToFilmDto(filmService.getFilmById(filmId).get());
+        return filmDto;
     }
 
     // Пользователь ставит лайк фильму.
@@ -74,6 +84,32 @@ public class FilmController {
 
         log.info("Выполнен запрос топ-{} фильмов.", count);
         return filmService.getTopPopularFilms(count);
+    }
+
+    // Жанры
+    @GetMapping("/genres")
+    public Collection<Genre> getAllGenres() {
+        log.info("Выполнен запрос жанров");
+        return filmService.getAllGenres();
+    }
+
+    // Жанр по id
+    @GetMapping("/genres/{id}")
+    public Genre getGenreById(@PathVariable Long id) {
+        return filmService.getGenreById(id);
+    }
+
+    // Рейтинги mpa
+    @GetMapping("/mpa")
+    public Collection<Rating> getAllRatings() {
+        log.info("Выполнен запрос рейтингов mpa");
+        return filmService.getAllRatings();
+    }
+
+    //Рейтинг mpa по id
+    @GetMapping("/mpa/{id}")
+    public Rating getRatingById(@PathVariable Long id) {
+        return filmService.getRatingById(id);
     }
 
 }

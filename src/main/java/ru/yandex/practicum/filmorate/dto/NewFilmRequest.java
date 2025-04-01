@@ -1,14 +1,13 @@
 package ru.yandex.practicum.filmorate.dto;
 
 import jakarta.validation.constraints.*;
-
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
 
 @Data
-public class FilmDto {
+public class NewFilmRequest {
     private Long id;
 
     @NotBlank(message = "Название фильма не может быть пустым")

@@ -20,6 +20,10 @@ import java.util.Collection;
 public class UserController {
     private final UserService userService;
 
+    //TODO переделать все на DTO!!!
+    //TODO дописать везде логирование
+
+
     @PostMapping("users")
     public UserDto create(@Valid @RequestBody NewUserRequest userRequest) {
         UserDto userLocal = userService.addUser(userRequest);

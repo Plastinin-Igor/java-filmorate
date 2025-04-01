@@ -4,9 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
+import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.storage.DBGenreStorage;
+import ru.yandex.practicum.filmorate.storage.DbRatingStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -21,16 +27,23 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final DBGenreStorage genreStorage;
+    private final DbRatingStorage ratingStorage;
 
     //Добавление фильм
-    public Film addFilm(Film film) {
-        return filmStorage.addFilm(film);
+    public FilmDto addFilm(NewFilmRequest newFilmRequest) {
+        Film film = FilmMapper.mapToFilm(newFilmRequest);
+        film = filmStorage.addFilm(film);
+        return FilmMapper.mapToFilmDto(film);
     }
 
     //Изменение фильма
-    public Film updateFilm(Film newFilm) {
-        filmExists(newFilm.getId());
-        return filmStorage.updateFilm(newFilm);
+    public FilmDto updateFilm(UpdateFilmRequest filmRequest) {
+        filmExists(filmRequest.getId());
+        Film film = filmStorage.getFilmById(filmRequest.getId()).get();
+        film = FilmMapper.updateFilmFields(film, filmRequest);
+        film = filmStorage.updateFilm(film);
+        return FilmMapper.mapToFilmDto(film);
     }
 
     //Удаление фильма
@@ -66,7 +79,7 @@ public class FilmService {
 
     // Пользователь удаляет лайк.
     public void deleteLike(Long filmId, Long userId) {
-        likeExists(filmId, userId);
+        //likeExists(filmId, userId);
         filmStorage.deleteLike(filmId, userId);
     }
 
@@ -75,6 +88,25 @@ public class FilmService {
         return filmStorage.getTopPopularFilms(count);
     }
 
+    // Список жанров
+    public Collection<Genre> getAllGenres() {
+        return genreStorage.getAllGenre();
+    }
+
+    // Жанр по id
+    public Genre getGenreById(long genreId) {
+        return genreStorage.getGenreById(genreId);
+    }
+
+    // Список рейтингов mpa
+    public Collection<Rating> getAllRatings() {
+        return ratingStorage.getRatings();
+    }
+
+    // Рейтинг mpa по id
+    public Rating getRatingById(long ratingId) {
+        return ratingStorage.getRatingById(ratingId);
+    }
 
     //Проверить наличие фильма в хранилище
     private void filmExists(Long id) {

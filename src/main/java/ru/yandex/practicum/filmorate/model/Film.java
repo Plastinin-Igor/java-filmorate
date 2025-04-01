@@ -41,5 +41,4 @@ public class Film {
         LocalDate cinemaBirthday = LocalDate.of(1895, 12, 28);
         return releaseDate.isAfter(cinemaBirthday);
     }
-
 }

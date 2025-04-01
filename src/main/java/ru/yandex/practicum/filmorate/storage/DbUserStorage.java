@@ -106,6 +106,10 @@ public class DbUserStorage extends BaseDBStorage<User> implements UserStorage {
         return findOne(FIND_BY_ID_QUERY, userId);
     }
 
+    //TODO И последнее небольшое изменение: дружба должна стать односторонней.
+    // Теперь, если пользователь отправляет заявку в друзья, он добавляет другого человека
+    // в свой список друзей, но сам в его список не попадает.
+
     @Override
     public void addFriends(Long userId, Long friendId) {
         update(INSERT_FRIEND, userId, friendId);

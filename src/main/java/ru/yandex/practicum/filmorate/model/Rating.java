@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class Rating {
-    private Long ratingId;
-    private String rating;
-    private String description;
+    private Long id;
+    private String name;
 }
