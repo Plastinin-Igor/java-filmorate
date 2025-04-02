@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -43,160 +44,237 @@ class FilmoRateApplicationTests {
     private final DBGenreStorage genreStorage;
     private final DbRatingStorage ratingStorage;
 
+    private Long filmId1;
+    private Long filmId2;
+    private Long userId1;
+    private Long userId2;
 
-    //Запрос пользователя по id
-    @Test
-    public void testGetUserById() {
-        User user = User.builder()
+    @BeforeEach
+    void addUsersForTests() {
+        User user1 = User.builder()
                 .email("plastinin@yandex.ru")
                 .login("Plastinin")
                 .name("Igor Plastinin")
                 .birthday(LocalDate.of(1984, 8, 12))
                 .build();
 
-        Optional<User> userOptional = userStorage.getUserById(1L);
-
-        assertThat(userOptional)
-                .isPresent()
-                .hasValueSatisfying(u ->
-                        assertThat(u).hasFieldOrPropertyWithValue("id", 1L)
-                );
-    }
-
-    //Запрос всех пользователей
-    @Test
-    public void testGetUsers() {
-        Collection<User> users = userStorage.getUsers();
-        assertThat(users.size()).isGreaterThanOrEqualTo(2);
-    }
-
-    //Добавление пользователя
-    @Test
-    public void testAddUser() {
-        User user = User.builder()
-                .email("kip-thorne@emc2.io")
-                .login("kip-thorne")
-                .name("Kip Thorne")
-                .birthday(LocalDate.of(1940, 6, 1))
+        User user2 = User.builder()
+                .email("ivanov@gmail.com")
+                .login("IvanovII")
+                .name("Ivanov Ivan")
+                .birthday(LocalDate.of(1989, 10, 1))
                 .build();
-        //Несмотря на то, что в таблице Users, в колонке user_id настроена автоинкрементация,
-        // при попытке добавить нового пользователя возникает ошибка   "PRIMARY KEY ON PUBLIC.USERS(USER_ID) (key:1)
-        //поэтому удаляем данные по пользователю с id = 1
-        userStorage.deleteFriend(1L, 2L);
-        userStorage.deleteFriend(2L, 1L);
-        filmStorage.deleteLike(1L, 1L);
-        filmStorage.deleteLike(3L, 1L);
-        userStorage.deleteUser(1L);
 
-        //Добавление пользователя
-        userStorage.addUser(user);
-        Collection<User> users = userStorage.getUsers();
-        assertThat(users.size()).isGreaterThanOrEqualTo(2);
+        user1 = userStorage.addUser(user1);
+        user2 = userStorage.addUser(user2);
 
-        Optional<User> userNew = userStorage.getUserById(1L);
-        assertThat(userNew)
-                .isPresent()
-                .hasValueSatisfying(u ->
-                        assertThat(u).hasFieldOrPropertyWithValue("login", "kip-thorne")
-                );
+        userId1 = user1.getId();
+        userId2 = user2.getId();
     }
 
-    //Исправление пользователя
-    @Test
-    public void testUpdateUser() {
-        //Получаем из базы пользователя с id = 1
-        Optional<User> user = userStorage.getUserById(1L);
-        //Устанавливаем новое значение в поле Email
-        user.get().setEmail("new-mail@ya.ru");
-        //Обновляем пользователя в базе данных
-        userStorage.updateUser(user.get());
-        //Получеме из базы данных обновленного пользователя с id = 1
-        Optional<User> userUpdated = userStorage.getUserById(1L);
-        //Проверяем, что значение в поле email изменилось на new-mail@ya.ru
-        assertThat(userUpdated)
-                .isPresent()
-                .hasValueSatisfying(u ->
-                        assertThat(u).hasFieldOrPropertyWithValue("email", "new-mail@ya.ru")
-                );
-    }
-
-    // Добавление/удаление/получение друзей
-    @Test
-    public void testAddFriends() {
-        //Удалим пользователя из друзей
-        userStorage.deleteFriend(1L, 2L);
-        //Проверим, что у пользователя нет друзей
-        Collection<User> friends = userStorage.getFriends(1L);
-        assertThat(friends.size()).isGreaterThanOrEqualTo(0);
-
-        //Добавим пользователя в друзья
-        userStorage.addFriends(1L, 2L);
-        //Проверим, что друг появился в системе
-        friends = userStorage.getFriends(1L);
-        assertThat(friends.size()).isGreaterThanOrEqualTo(0);
-    }
-
-    @Test
-    public void testFilmById() {
-        Optional<Film> filmOptional = filmStorage.getFilmById(1L);
-        assertThat(filmOptional)
-                .isPresent()
-                .hasValueSatisfying(f ->
-                        assertThat(f).hasFieldOrPropertyWithValue("id", 1L)
-                );
-    }
-
-    //Запрос всех фильмов
-    @Test
-    public void testGetFilms() {
-        Collection<Film> films = filmStorage.getFilms();
-        assertThat(films.size()).isGreaterThanOrEqualTo(3);
-    }
-
-    //Добавление фильма
-    @Test
-    public void testAddFilm() {
-        Film film = Film.builder()
-                .id(1L)
+    @BeforeEach
+    void addFilmForTests() {
+        Film film1 = Film.builder()
                 .name("Сталкер")
                 .description("Мистическое путешествие через Зону к комнате, где исполняются желания. " +
                              "Философский шедевр Андрея Тарковского.")
                 .releaseDate(LocalDate.of(1980, 5, 19))
                 .duration(163)
                 .rating(new Rating(2L, "PG"))
+                .genres(new LinkedHashSet<Genre>(Set.of(new Genre(2L, "Драма"),
+                        new Genre(4L, "Триллер"))))
+                .build();
+
+        Film film2 = Film.builder()
+                .name("Интерстеллар")
+                .description("Фильм, вдохновленный идеями физика Кипа Торна, исследует темы выживания человечества, " +
+                             "родительской любви и парадоксов времени через призму релятивистской физики")
+                .releaseDate(LocalDate.of(2014, 10, 26))
+                .duration(169)
+                .rating(new Rating(2L, "PG-13"))
+                .genres(new LinkedHashSet<Genre>(Set.of(new Genre(2L, "Драма"),
+                        new Genre(4L, "Триллер"))))
+                .build();
+
+        // Создать фильмы
+        film1 = filmStorage.addFilm(film1);
+        film2 = filmStorage.addFilm(film2);
+
+        filmId1 = film1.getId();
+        filmId2 = film2.getId();
+    }
+
+    // U S E R S
+
+    //Добавление пользователя
+    @Test
+    public void testAddUser() {
+        System.out.println("Добавление пользователя");
+        User user = User.builder()
+                .email("kip-thorne@emc2.io")
+                .login("kip-thorne")
+                .name("Kip Thorne")
+                .birthday(LocalDate.of(1940, 6, 1))
+                .build();
+
+        //Добавление пользователя
+        User userAdded = userStorage.addUser(user);
+        //Получение добавленного пользователя из базы
+        Optional<User> userNew = userStorage.getUserById(userAdded.getId());
+        assertThat(userNew)
+                .isPresent()
+                .hasValueSatisfying(u ->
+                        assertThat(u).hasFieldOrPropertyWithValue("login", "kip-thorne")
+                )
+                .hasValueSatisfying(u ->
+                        assertThat(u).hasFieldOrPropertyWithValue("name", "Kip Thorne")
+                )
+                .hasValueSatisfying(u ->
+                        assertThat(u).hasFieldOrPropertyWithValue("email", "kip-thorne@emc2.io")
+                );
+    }
+
+    //Запрос пользователя по id
+    @Test
+    public void testGetUserById() {
+        System.out.println("Запрос пользователя по id");
+        //Запрашиваем из базы пользователя с id = 1
+        Optional<User> userOptional = userStorage.getUserById(userId1);
+        //Проверяем, что пользователь с id = 1 получен из базы
+        assertThat(userOptional)
+                .isPresent()
+                .hasValueSatisfying(u ->
+                        assertThat(u).hasFieldOrPropertyWithValue("id", userId1)
+                );
+    }
+
+    //Запрос всех пользователей
+    @Test
+    public void testGetUsers() {
+        System.out.println("Запрос из базы всех пользователей");
+        Collection<User> users = userStorage.getUsers();
+        assertThat(users.size()).isGreaterThanOrEqualTo(2);
+    }
+
+
+    //Исправление пользователя
+    @Test
+    public void testUpdateUser() {
+        System.out.println("Исправление пользователя");
+        //Получаем из базы пользователя с id = 1
+        Optional<User> user = userStorage.getUserById(userId1);
+        //Устанавливаем новое значение в поле Email
+        user.get().setEmail("new-mail@ya.ru");
+        user.get().setLogin("new-login");
+        user.get().setName("new-name");
+        //Обновляем пользователя в базе данных
+        userStorage.updateUser(user.get());
+        //Получаем из базы данных обновленного пользователя с id = 1
+        Optional<User> userUpdated = userStorage.getUserById(userId1);
+        //Проверяем, что значение в полях изменилось
+        assertThat(userUpdated)
+                .isPresent()
+                .hasValueSatisfying(u ->
+                        assertThat(u).hasFieldOrPropertyWithValue("email", "new-mail@ya.ru")
+                )
+                .hasValueSatisfying(u ->
+                        assertThat(u).hasFieldOrPropertyWithValue("login", "new-login")
+                )
+                .hasValueSatisfying(u ->
+                        assertThat(u).hasFieldOrPropertyWithValue("name", "new-name")
+                );
+    }
+
+    // Добавление/удаление/получение друзей
+    @Test
+    public void testAddFriends() {
+        System.out.println("Добавление/удаление/получение друзей");
+
+        //Проверим, что у пользователя нет друзей
+        Collection<User> friends = userStorage.getFriends(userId1);
+        assertThat(friends.size()).isGreaterThanOrEqualTo(0);
+
+        //Добавим пользователя в друзья
+        userStorage.addFriends(userId1, userId2);
+
+        //Проверим, что друг появился в системе
+        friends = userStorage.getFriends(userId1);
+        assertThat(friends.size()).isGreaterThanOrEqualTo(1);
+
+        //Удалим пользователя из друзей
+        userStorage.deleteFriend(userId1, userId2);
+
+        //Проверим, что друга нет в системе
+        friends = userStorage.getFriends(userId1);
+        assertThat(friends.size()).isGreaterThanOrEqualTo(0);
+    }
+
+    // F I L M S
+
+    //Добавление фильма
+    @Test
+    public void testAddFilm() {
+        System.out.println("Добавление фильма");
+        Film film = Film.builder()
+                .name("Солярис")
+                .description("На космическую станцию, сотрудники которой давно и тщетно пытаются сладить с загадкой планеты Солярис, " +
+                             "полностью покрытой Океаном, прибывает новый учёный, психолог Крис Кельвин.")
+                .releaseDate(LocalDate.of(1972, 5, 5))
+                .duration(169)
+                .rating(new Rating(2L, "PG"))
                 .genres(new LinkedHashSet<Genre>(Set.of(new Genre(2L, "Драма"), new Genre(4L, "Триллер"))))
                 .build();
 
-        //Несмотря на то, что в таблице Film, в колонке film_id настроена автоинкрементация,
-        // при попытке добавить нового пользователя возникает ошибка   "PRIMARY KEY ON PUBLIC.FILM(FILM_ID) (key:1)
-        //поэтому удаляем данные по фильму с id = 1
-        filmStorage.deleteLike(1L, 1L);
-        filmStorage.deleteLike(1L, 2L);
-        genreStorage.deleteGenreByFilm(1L);
-        filmStorage.deleteFilm(1L);
-
         //Добавляем фильм
-        filmStorage.addFilm(film);
+        Film filmAdded = filmStorage.addFilm(film);
         //Получаем из базы добавленный фильм
-        Optional<Film> filmOptional = filmStorage.getFilmById(1L);
+        Optional<Film> filmOptional = filmStorage.getFilmById(filmAdded.getId());
         //Проверяем, что добавился корректно
         assertThat(filmOptional)
                 .isPresent()
                 .hasValueSatisfying(f ->
                         assertThat(f).hasFieldOrPropertyWithValue("name", film.getName())
+                )
+                .hasValueSatisfying(f ->
+                        assertThat(f).hasFieldOrPropertyWithValue("description", film.getDescription())
+                )
+                .hasValueSatisfying(f ->
+                        assertThat(f).hasFieldOrPropertyWithValue("rating", film.getRating())
                 );
     }
 
+    //Получить фильм по id
+    @Test
+    public void testFilmById() {
+        System.out.println("Получить фильм по id");
+        Optional<Film> filmOptional = filmStorage.getFilmById(filmId1);
+        assertThat(filmOptional)
+                .isPresent()
+                .hasValueSatisfying(f ->
+                        assertThat(f).hasFieldOrPropertyWithValue("id", filmId1)
+                );
+    }
+
+    //Получить список всех фильмов
+    @Test
+    public void testGetFilms() {
+        System.out.println("Получить список всех фильмов");
+        Collection<Film> films = filmStorage.getFilms();
+        assertThat(films.size()).isGreaterThanOrEqualTo(2);
+    }
+
+    //Изменение фильма
     @Test
     public void testUpdateFilm() {
-        //Получаем из базы пользователя с id = 1
-        Optional<Film> film = filmStorage.getFilmById(1L);
+        System.out.println("Изменение фильма");
+        //Получаем из базы фильм с id = 1
+        Optional<Film> film = filmStorage.getFilmById(filmId1);
         //Устанавливаем новое значение в поле name
         film.get().setName("new name film");
-        //Обновляем пользователя в базе данных
+        //Обновляем фильм в базе данных
         filmStorage.updateFilm(film.get());
-        //Получеме из базы данных обновленного пользователя с id = 1
-        Optional<Film> filmUpdated = filmStorage.getFilmById(1L);
+        //Получаем из базы данных обновленный фильм с id = 1
+        Optional<Film> filmUpdated = filmStorage.getFilmById(filmId1);
         //Проверяем, что значение в поле name изменилось на new name film
         assertThat(filmUpdated)
                 .isPresent()
@@ -208,22 +286,20 @@ class FilmoRateApplicationTests {
     //Удаление-добавление лайков
     @Test
     public void testAddDeleteLike() {
+        System.out.println("Удаление-добавление лайков");
         //Получим количество лайков из базы по фильму с id = 1
-        assertThat(filmStorage.getCountOfLikeByFilmId(1L)).isGreaterThanOrEqualTo(2);
-        //Удалим лайки из базы по фильму с id = 1
-        filmStorage.deleteLike(1L, 1L);
-        filmStorage.deleteLike(1L, 2L);
-        //Получим количество лайков после удаления из базы по фильму с id = 1
         assertThat(filmStorage.getCountOfLikeByFilmId(1L)).isGreaterThanOrEqualTo(0);
-        //Добавим лайк фильму с id = 1
-        filmStorage.addLike(1L, 1L);
-        //Проверим, что лайк добавился
-        assertThat(filmStorage.getCountOfLikeByFilmId(1L)).isGreaterThanOrEqualTo(1);
+        //Удалим лайк к фильму с id = 1
+        filmStorage.deleteLike(1L, 1L);
+        //Проверим, что лайка больше нет
+        assertThat(filmStorage.getCountOfLikeByFilmId(1L)).isGreaterThanOrEqualTo(0);
     }
 
     //Получить топ фильмов
     @Test
     public void testGetTopPopularFilms() {
+        System.out.println("Получить топ фильмов");
+
         Collection<Film> films = filmStorage.getTopPopularFilms(2);
         assertThat(films.size()).isGreaterThanOrEqualTo(2);
 
@@ -234,6 +310,7 @@ class FilmoRateApplicationTests {
     //Получить список жанров
     @Test
     public void testGetGenres() {
+        System.out.println("Получить список жанров");
         Collection<Genre> genres = genreStorage.getAllGenre();
         assertThat(genres.size()).isGreaterThanOrEqualTo(6);
     }
@@ -241,6 +318,7 @@ class FilmoRateApplicationTests {
     //Получить жанр по id
     @Test
     public void testGetGenreById() {
+        System.out.println("Получить жанр по id");
         Genre genre = genreStorage.getGenreById(1L);
         assertThat(Optional.of(genre))
                 .isPresent()
@@ -252,6 +330,7 @@ class FilmoRateApplicationTests {
     //Получить список рейтингов mpa
     @Test
     public void testGetRatings() {
+        System.out.println("Получить список рейтингов mpa");
         Collection<Genre> genres = genreStorage.getAllGenre();
         assertThat(genres.size()).isGreaterThanOrEqualTo(5);
     }
@@ -259,6 +338,7 @@ class FilmoRateApplicationTests {
     //Получить рейтинг mpa по id
     @Test
     public void testGetRatingById() {
+        System.out.println("Получить рейтинг mpa по id");
         Rating rating = ratingStorage.getRatingById(1L);
         assertThat(Optional.of(rating))
                 .isPresent()
