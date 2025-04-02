@@ -20,10 +20,6 @@ import java.util.Collection;
 public class UserController {
     private final UserService userService;
 
-    //TODO переделать все на DTO!!!
-    //TODO дописать везде логирование
-
-
     @PostMapping("users")
     public UserDto create(@Valid @RequestBody NewUserRequest userRequest) {
         UserDto userLocal = userService.addUser(userRequest);
@@ -47,6 +43,7 @@ public class UserController {
 
     @GetMapping("users/{userId}")
     public UserDto getUserById(@PathVariable long userId) {
+        log.info("Выполнен запрос к пользователю с id: {}.", userId);
         return userService.getUserById(userId);
     }
 

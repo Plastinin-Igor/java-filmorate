@@ -23,14 +23,14 @@ public class DbUserStorage extends BaseDBStorage<User> implements UserStorage {
     private static final String FIND_BY_ID_QUERY = "select * from users where user_id = ?";
     private static final String FIND_BY_EMAIL = "select * from users where email = ?";
     private static final String FIND_BY_LOGIN = "select * from users where login = ?";
-    private static final String DELETE_BY_ID = "delete from users where id = ?";
+    private static final String DELETE_BY_ID = "delete from users where user_id = ?";
     private static final String INSERT_FRIEND = "insert into friends (user_id, friend_id) values(?, ?)";
     private static final String DELETE_FRIEND = "delete friends where user_id = ? and friend_id = ?";
     private static final String INSERT_QUERY = """
-             insert into users\s
-             (email, login, name, birthday)\s
+             insert into users
+             (email, login, name, birthday)
              values(?, ?, ?, ?)
-            \s""";
+            """;
     private static final String UPDATE_QUERY = """
             update users
                set email = ?,
@@ -40,18 +40,18 @@ public class DbUserStorage extends BaseDBStorage<User> implements UserStorage {
              where user_id = ?
             """;
     private static final String FIND_FRIENDS = """
-             select *\s
+             select *
               from users u
              inner join friends f on (u.user_id = f.friend_id)
              where f.user_id = ?
-            \s""";
+            """;
     private static final String FIND_FRIENDS_ID = """
-             select *\s
+             select *
               from users u
              inner join friends f on (u.user_id = f.friend_id)
              where f.user_id = ?
                and f.friend_id = ?
-            \s""";
+            """;
     private static final String FIND_COMMON_FRIENDS = """
             select u.*
               from users u
@@ -105,10 +105,6 @@ public class DbUserStorage extends BaseDBStorage<User> implements UserStorage {
     public Optional<User> getUserById(Long userId) {
         return findOne(FIND_BY_ID_QUERY, userId);
     }
-
-    //TODO И последнее небольшое изменение: дружба должна стать односторонней.
-    // Теперь, если пользователь отправляет заявку в друзья, он добавляет другого человека
-    // в свой список друзей, но сам в его список не попадает.
 
     @Override
     public void addFriends(Long userId, Long friendId) {

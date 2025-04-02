@@ -85,6 +85,7 @@ public class DbFilmStorage extends BaseDBStorage<Film> implements FilmStorage {
     private static final String INSERT_QUERY_LIKE = "insert into likes (film_id, user_id) values(?, ?)";
     private static final String DELETE_LIKE_BY_ID = "delete from likes where film_id = ? and user_id = ?";
     private static final String COUNT_ROWS_FILM = "select count(*) from film";
+    private static final String COUNT_LIKE_BY_FILM = "select count(*) from likes where film_id = ?";
 
     private final DBGenreStorage dbGenreStorage;
     private final DbRatingStorage dbRatingStorage;
@@ -97,6 +98,7 @@ public class DbFilmStorage extends BaseDBStorage<Film> implements FilmStorage {
         this.dbGenreStorage = dbGenreStorage;
         this.dbRatingStorage = dbRatingStorage;
     }
+
 
     @Override
     public Film addFilm(Film film) {
@@ -191,6 +193,10 @@ public class DbFilmStorage extends BaseDBStorage<Film> implements FilmStorage {
             }
         }
         return films;
+    }
+
+    public int getCountOfLikeByFilmId(long filmId) {
+        return getCountFromTab(COUNT_LIKE_BY_FILM, filmId);
     }
 
     @Override

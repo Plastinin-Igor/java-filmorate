@@ -1,18 +1,22 @@
 # java-filmorate
+
 ### Бэкенд сервиса, который работает с фильмами и оценками пользователей
 
 ## База данных
+
 ### ER-диаграмма
+
 ![er_filmorate_db.png](src/main/resources/er_filmorate_db.png)
 
 ### Текстовое описание базы данных
+
 | Таблица    | Наименование колонки | Тип данных   | Описание                              |
 |------------|----------------------|--------------|---------------------------------------|
-| user       | user_id              | integer      | Уникальный идентификатор пользователя |
-| user       | email                | varchar(50)  | Адрес электронной почты               |
-| user       | login                | varchar(50)  | Логин пользователя                    |
-| user       | name                 | varchar(150) | Имя пользователя                      |
-| user       | birthday             | date         | Дата рождения                         |
+| users      | user_id              | integer      | Уникальный идентификатор пользователя |
+| users      | email                | varchar(50)  | Адрес электронной почты               |
+| users      | login                | varchar(50)  | Логин пользователя                    |
+| users      | name                 | varchar(150) | Имя пользователя                      |
+| users      | birthday             | date         | Дата рождения                         |
 | film       | film_id              | integer      | Уникальный идентификатор фильма       |
 | film       | name                 | varchar(150) | Название фильма                       |
 | film       | description          | varchar(200) | Описание фильма                       |
@@ -37,33 +41,47 @@
 
 ## ЗАПРОСЫ
 
-### Примеры запросов для сущностей "Пользователи" и "Друзья" 
+### Примеры запросов для сущностей "Пользователи" и "Друзья"
+
 - Список пользователй
+
 ```
 select * from users;
 ```
+
 - Найти пользователя по id
+
 ```
 select * from users where user_id = :id;
 ```
+
 - Найти пользователя по email
+
 ```
 select * from users where email = :email; 
 ```
+
 - Найти пользователя по логину
+
 ```
 select * from users where login = :login;
 ```
+
 - Удаление пользователя
+
 ```
 delete from users where id = :id;
 ```
+
 - Добавление нового пользователя
+
 ```
 insert into users (email, login, name, birthday) 
 values (:email, :login, :name, :birthday);
 ```
+
 - Исправление пользователя
+
 ```
 update users
    set email = :email,
@@ -72,23 +90,30 @@ update users
        birthday = :birthday
  where user_id = :id;
 ```
+
 - Добавление пользователя в друзья
+
 ```
 insert into friends (user_id, friend_id) values(:user_id, :friend_id);
 ```
+
 - Удаление пользователя из друзей
+
 ```
 delete friends where user_id = :user_id and friend_id = :friend_id;
 ```
 
-- Список друзей пользователя 
+- Список друзей пользователя
+
 ```
 select * 
   from users u
  inner join friends f on (u.user_id = f.friend_id)
  where f.user_id = :id;
 ```
+
 - Поиск пользователя в друзьях
+
 ```
 select * 
  from users u
@@ -96,7 +121,9 @@ inner join friends f on (u.user_id = f.friend_id)
 where f.user_id = :user_id
   and f.friend_id = :user_id;
 ```
+
 - Поиск общих друзей
+
 ```
 select u.*
   from users u
@@ -107,47 +134,72 @@ select u.*
 ```
 
 ### Примеры запросов для сущностей "Фильмы"
+
 - Список фильмов с рейтингом
+
 ```
-select f.name,
+select f.film_id,
+       f.name,
        f.description,
        f.releasedate,
        f.duration,
+       r.rating_id,
        r.rating,
        r.description rating_description
-  from film f 
-  inner join rating r on (r.rating_id = f.film_id);
+  from film f
+  left join rating r on (f.rating = r.rating_id);
   ```
-- Список фильмов по жанрам
+
+- Добавление фильма
+
 ```
-select g.genre_name,
-       r.rating,
-       f.name film_name,
-       f.description rating_description
-  from film f 
-  inner join rating r on (r.rating_id = f.film_id)
-  inner join film_genre fg on (fg.film_id = f.film_id)
-  inner join genre g on (g.genre_id = fg.genre_id);
+insert into film
+(name, description, releasedate, duration, rating)
+values(:name, :description, :releasedate, :duration, :rating)
 ```
+
+- Изменение фильма
+
+```
+update film
+   set name = :name,
+       description = :description,
+	   releasedate = :releasedate,
+	   duration = :duration,
+	   rating = :rating
+ where film_id = :film_id; 
+```
+
+- Список топ n фильмов
+
+```
+ select film_id,
+        name,
+        description,
+        releasedate,
+        duration,
+        rating_id,
+        rating,
+        rating_description
+   from (select (select count(1)
+                   from likes l
+                  where l.film_id = f.film_id) likes_qnt,
+                f.film_id,
+                f.name,
+                f.description,
+                f.releasedate,
+                f.duration,
+                r.rating_id,
+                r.rating,
+                r.description rating_description
+           from film f
+           left join rating r
+             on (f.rating = r.rating_id)
+          order by likes_qnt desc) limit :n;
+```
+
 - Количество лайков у фильма
-```
-select f.name film_name,
-       count(l.film_id) likes
-   from film f 
- inner join likes l on (l.film_id = f.film_id)  
- group by film_name;
-```
-- Список пользователей
-```
-select * from "user";
-```
-- Список друзей
-```
-select u.login user_name,
-       u2.login friend_name 
-  from "user" u
- inner join friends f on (u.user_id = f.user_id) 
- inner join "user" u2 on (u2.user_id = f.friend_id);
-```
 
-
+```
+select count(*) from likes where film_id = :id
+```

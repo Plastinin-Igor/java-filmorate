@@ -22,6 +22,7 @@ public class DBGenreStorage extends BaseDBStorage<Genre> {
     private static final String FIND_ALL_GENRE = "select g.genre_id, g.genre_name from genre g order by g.genre_id";
     private static final String FIND_GENRE_BY_ID = "select g.genre_id, g.genre_name from genre g where g.genre_id = ?";
     private static final String INSERT_FILM_GENRE = "insert into film_genre (film_id, genre_id) values(?, ?)";
+    private static final String DELETE_GENRE_BY_FILM = "delete from film_genre where film_id = ?";
 
     public DBGenreStorage(JdbcTemplate jdbc, RowMapper<Genre> mapper) {
         super(jdbc, mapper);
@@ -48,4 +49,9 @@ public class DBGenreStorage extends BaseDBStorage<Genre> {
     public void addFilmGenre(long filmId, long genreId) {
         insert(INSERT_FILM_GENRE, filmId, genreId);
     }
+
+    public void deleteGenreByFilm(long filmId) {
+        delete(DELETE_GENRE_BY_FILM, filmId);
+    }
+
 }

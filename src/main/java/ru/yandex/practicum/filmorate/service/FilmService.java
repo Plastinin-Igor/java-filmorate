@@ -3,21 +3,18 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dto.FilmDto;
-import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
-import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
+import ru.yandex.practicum.filmorate.dto.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.mapper.GenreMapper;
+import ru.yandex.practicum.filmorate.mapper.RatingMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.DBGenreStorage;
 import ru.yandex.practicum.filmorate.storage.DbRatingStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -61,9 +58,9 @@ public class FilmService {
     }
 
     //Получение фильма по id
-    public Optional<Film> getFilmById(Long filmId) {
+    public FilmDto getFilmById(Long filmId) {
         filmExists(filmId);
-        return filmStorage.getFilmById(filmId);
+        return FilmMapper.mapToFilmDto(filmStorage.getFilmById(filmId).get());
     }
 
     //Пользователь ставит лайк фильму.
@@ -84,28 +81,37 @@ public class FilmService {
     }
 
     //Возвращает список из первых count фильмов по количеству лайков.
-    public Collection<Film> getTopPopularFilms(int count) {
-        return filmStorage.getTopPopularFilms(count);
+    public Collection<FilmDto> getTopPopularFilms(int count) {
+        return filmStorage.getTopPopularFilms(count)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
     }
 
     // Список жанров
-    public Collection<Genre> getAllGenres() {
-        return genreStorage.getAllGenre();
+    public Collection<GenreDto> getAllGenres() {
+        return genreStorage.getAllGenre()
+                .stream()
+                .map(GenreMapper::mapToGenreDto)
+                .collect(Collectors.toList());
     }
 
     // Жанр по id
-    public Genre getGenreById(long genreId) {
-        return genreStorage.getGenreById(genreId);
+    public GenreDto getGenreById(long genreId) {
+        return GenreMapper.mapToGenreDto(genreStorage.getGenreById(genreId));
     }
 
     // Список рейтингов mpa
-    public Collection<Rating> getAllRatings() {
-        return ratingStorage.getRatings();
+    public Collection<RatingDto> getAllRatings() {
+        return ratingStorage.getRatings()
+                .stream()
+                .map(RatingMapper::mapToRatingDto)
+                .collect(Collectors.toList());
     }
 
     // Рейтинг mpa по id
-    public Rating getRatingById(long ratingId) {
-        return ratingStorage.getRatingById(ratingId);
+    public RatingDto getRatingById(long ratingId) {
+        return RatingMapper.mapToRatingDto(ratingStorage.getRatingById(ratingId));
     }
 
     //Проверить наличие фильма в хранилище
