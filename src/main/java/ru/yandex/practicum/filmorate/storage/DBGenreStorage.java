@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.List;
 
+
 @Repository
 @Slf4j
 public class DBGenreStorage extends BaseDBStorage<Genre> {
@@ -47,6 +48,14 @@ public class DBGenreStorage extends BaseDBStorage<Genre> {
     }
 
     public void addFilmGenre(long filmId, long genreId) {
+        try {
+            findOne(FIND_GENRE_BY_ID, genreId)
+                    .orElseThrow(() -> new NotFoundException("Жанр с id: " + genreId + " не найден в системе"));
+        } catch (NotFoundException e) {
+            log.error(e.getMessage());
+            throw e;
+        }
+
         insert(INSERT_FILM_GENRE, filmId, genreId);
     }
 

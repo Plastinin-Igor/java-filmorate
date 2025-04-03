@@ -228,7 +228,7 @@ class FilmoRateApplicationTests {
         //Добавляем фильм
         Film filmAdded = filmStorage.addFilm(film);
         //Получаем из базы добавленный фильм
-        Optional<Film> filmOptional = filmStorage.getFilmById(filmAdded.getId());
+        Optional<Film> filmOptional = Optional.of(filmStorage.getFilmById(filmAdded.getId()));
         //Проверяем, что добавился корректно
         assertThat(filmOptional)
                 .isPresent()
@@ -247,7 +247,7 @@ class FilmoRateApplicationTests {
     @Test
     public void testFilmById() {
         System.out.println("Получить фильм по id");
-        Optional<Film> filmOptional = filmStorage.getFilmById(filmId1);
+        Optional<Film> filmOptional = Optional.of(filmStorage.getFilmById(filmId1));
         assertThat(filmOptional)
                 .isPresent()
                 .hasValueSatisfying(f ->
@@ -268,13 +268,13 @@ class FilmoRateApplicationTests {
     public void testUpdateFilm() {
         System.out.println("Изменение фильма");
         //Получаем из базы фильм с id = 1
-        Optional<Film> film = filmStorage.getFilmById(filmId1);
+        Optional<Film> film = Optional.of(filmStorage.getFilmById(filmId1));
         //Устанавливаем новое значение в поле name
         film.get().setName("new name film");
         //Обновляем фильм в базе данных
         filmStorage.updateFilm(film.get());
         //Получаем из базы данных обновленный фильм с id = 1
-        Optional<Film> filmUpdated = filmStorage.getFilmById(filmId1);
+        Optional<Film> filmUpdated = Optional.of(filmStorage.getFilmById(filmId1));
         //Проверяем, что значение в поле name изменилось на new name film
         assertThat(filmUpdated)
                 .isPresent()

@@ -9,12 +9,11 @@ import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.GenreMapper;
 import ru.yandex.practicum.filmorate.mapper.RatingMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.DBGenreStorage;
-import ru.yandex.practicum.filmorate.storage.DbRatingStorage;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.*;
 
-import java.util.Collection;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,18 +25,37 @@ public class FilmService {
     private final UserStorage userStorage;
     private final DBGenreStorage genreStorage;
     private final DbRatingStorage ratingStorage;
+    private final DbFilmGenreStorage filmGenreStorage;
 
-    //Добавление фильм
+    //Добавление фильма
     public FilmDto addFilm(NewFilmRequest newFilmRequest) {
         Film film = FilmMapper.mapToFilm(newFilmRequest);
+        // Считаем из базы рейтинг mpa по его id
+        if (film.getRating() != null) {
+            film.setRating(ratingStorage.getRatingById(film.getRating().getId()));
+        }
+
         film = filmStorage.addFilm(film);
+
+        //Добавление жанра(ов)
+        if (!film.getGenres().isEmpty()) {
+            long filmId = film.getId();
+            film.getGenres()
+                    .stream()
+                    .forEach(g -> genreStorage.addFilmGenre(filmId, g.getId()));
+        }
+
         return FilmMapper.mapToFilmDto(film);
     }
 
     //Изменение фильма
     public FilmDto updateFilm(UpdateFilmRequest filmRequest) {
         filmExists(filmRequest.getId());
-        Film film = filmStorage.getFilmById(filmRequest.getId()).get();
+        Film film = filmStorage.getFilmById(filmRequest.getId());
+        // Считаем из базы рейтинг mpa по его id
+        if (film.getRating() != null) {
+            film.setRating(ratingStorage.getRatingById(filmRequest.getMpa().getId()));
+        }
         film = FilmMapper.updateFilmFields(film, filmRequest);
         film = filmStorage.updateFilm(film);
         return FilmMapper.mapToFilmDto(film);
@@ -51,7 +69,30 @@ public class FilmService {
 
     //Список всех фильмов
     public Collection<FilmDto> getFilms() {
-        return filmStorage.getFilms()
+        //Получаем все фильмы
+        List<Film> films = new ArrayList<>(filmStorage.getFilms());
+
+        //Получаем все связи фильм -> жанры
+        List<FilmGenre> filmsGenres = filmGenreStorage.getAllFilmGenre();
+
+        // Создаем и заполняем карту: filmId -> Set<Genre>
+        Map<Long, LinkedHashSet<Genre>> filmsGenresMap = new HashMap<>();
+        for (FilmGenre filmGenre : filmsGenres) {
+            Long filmId = filmGenre.getFilmId();
+            Genre genre = filmGenre.getGenre();
+            filmsGenresMap.computeIfAbsent(filmId, key -> new LinkedHashSet<>()).add(genre);
+        }
+
+        //Добавляем жанры к фильмам
+        for (Film film : films) {
+            LinkedHashSet<Genre> genres = filmsGenresMap.get(film.getId());
+            if (genres != null) {
+                film.setGenres(genres);
+            }
+        }
+
+        // Возвращаем результат
+        return films
                 .stream()
                 .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
@@ -59,8 +100,13 @@ public class FilmService {
 
     //Получение фильма по id
     public FilmDto getFilmById(Long filmId) {
-        filmExists(filmId);
-        return FilmMapper.mapToFilmDto(filmStorage.getFilmById(filmId).get());
+        Film film = filmStorage.getFilmById(filmId);
+        //Добавляем к фильму жанры
+        LinkedHashSet<Genre> genres = new LinkedHashSet<>(genreStorage.getFilmGenres(filmId));
+        if (!genres.isEmpty()) {
+            film.setGenres(genres);
+        }
+        return FilmMapper.mapToFilmDto(film);
     }
 
     //Пользователь ставит лайк фильму.
@@ -76,13 +122,35 @@ public class FilmService {
 
     // Пользователь удаляет лайк.
     public void deleteLike(Long filmId, Long userId) {
-        //likeExists(filmId, userId);
         filmStorage.deleteLike(filmId, userId);
     }
 
     //Возвращает список из первых count фильмов по количеству лайков.
     public Collection<FilmDto> getTopPopularFilms(int count) {
-        return filmStorage.getTopPopularFilms(count)
+        //Получаем топ n фильмов
+        List<Film> films = new ArrayList<>(filmStorage.getTopPopularFilms(count));
+
+        //Получаем все связи фильм -> жанры
+        List<FilmGenre> filmsGenres = filmGenreStorage.getAllFilmGenre();
+
+        // Создаем и заполняем карту: filmId -> Set<Genre>
+        Map<Long, LinkedHashSet<Genre>> filmsGenresMap = new HashMap<>();
+        for (FilmGenre filmGenre : filmsGenres) {
+            Long filmId = filmGenre.getFilmId();
+            Genre genre = filmGenre.getGenre();
+            filmsGenresMap.computeIfAbsent(filmId, key -> new LinkedHashSet<>()).add(genre);
+        }
+
+        //Добавляем жанры к фильмам
+        for (Film film : films) {
+            LinkedHashSet<Genre> genres = filmsGenresMap.get(film.getId());
+            if (genres != null) {
+                film.setGenres(genres);
+            }
+        }
+
+        // Возвращаем результат
+        return films
                 .stream()
                 .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());

@@ -7,8 +7,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.util.*;
 
@@ -87,57 +85,35 @@ public class DbFilmStorage extends BaseDBStorage<Film> implements FilmStorage {
     private static final String COUNT_ROWS_FILM = "select count(*) from film";
     private static final String COUNT_LIKE_BY_FILM = "select count(*) from likes where film_id = ?";
 
-    private final DBGenreStorage dbGenreStorage;
-    private final DbRatingStorage dbRatingStorage;
 
-    public DbFilmStorage(JdbcTemplate jdbc,
-                         RowMapper<Film> mapper,
-                         DBGenreStorage dbGenreStorage,
-                         DbRatingStorage dbRatingStorage) {
+    public DbFilmStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
-        this.dbGenreStorage = dbGenreStorage;
-        this.dbRatingStorage = dbRatingStorage;
     }
 
 
     @Override
     public Film addFilm(Film film) {
-        // Считаем из базы рейтинг mpa по его id
-        long ratingId = 0;
-        if (film.getRating() != null) {
-            Rating rating = dbRatingStorage.getRatingById(film.getRating().getId());
-            film.setRating(rating);
-            ratingId = rating.getId();
-        }
         // Добавим новый фильм
         long id = insert(INSERT_QUERY_FILM,
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                ratingId
+                film.getRating().getId()
         );
         // Запишем полученный из базы id добавленного фильма
         film.setId(id);
-        // Если есть информация о жанре(ах), добавим их в базу
-        if (!film.getGenres().isEmpty()) {
-            for (Genre genre : film.getGenres()) {
-                dbGenreStorage.getGenreById(genre.getId());
-                dbGenreStorage.addFilmGenre(film.getId(), genre.getId());
-            }
-        }
         return film;
     }
 
     @Override
     public Film updateFilm(Film film) {
-        Rating rating = dbRatingStorage.getRatingById(film.getRating().getId());
         update(UPDATE_FILM_BY_ID,
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                rating.getId(),
+                film.getRating().getId(),
                 film.getId()
         );
         return film;
@@ -151,25 +127,14 @@ public class DbFilmStorage extends BaseDBStorage<Film> implements FilmStorage {
     @Override
     public Collection<Film> getFilms() {
         List<Film> films = new ArrayList<>(findMany(FIND_ALL_QUERY));
-        for (Film film : films) {
-            LinkedHashSet<Genre> genres = new LinkedHashSet<>(dbGenreStorage.getFilmGenres(film.getId()));
-            if (!genres.isEmpty()) {
-                film.setGenres(genres);
-            }
-        }
         return films;
     }
 
     @Override
-    public Optional<Film> getFilmById(Long filmId) {
-        LinkedHashSet<Genre> genres = new LinkedHashSet<>(dbGenreStorage.getFilmGenres(filmId));
+    public Film getFilmById(Long filmId) {
         Film film = findOne(FIND_BY_ID_QUERY, filmId)
                 .orElseThrow(() -> new NotFoundException("Фильм с id " + filmId + " не найден"));
-
-        if (!genres.isEmpty()) {
-            film.setGenres(genres);
-        }
-        return Optional.of(film);
+        return film;
     }
 
     @Override
@@ -186,12 +151,6 @@ public class DbFilmStorage extends BaseDBStorage<Film> implements FilmStorage {
     public Collection<Film> getTopPopularFilms(int count) {
         int countRowsFromFilm = getCountFromTab(COUNT_ROWS_FILM);
         List<Film> films = new ArrayList<>(findMany(QUERY_TOP_N_FILMS, Math.min(count, countRowsFromFilm)));
-        for (Film film : films) {
-            LinkedHashSet<Genre> genres = new LinkedHashSet<>(dbGenreStorage.getFilmGenres(film.getId()));
-            if (!genres.isEmpty()) {
-                film.setGenres(genres);
-            }
-        }
         return films;
     }
 
