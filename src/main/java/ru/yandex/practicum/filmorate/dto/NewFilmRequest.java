@@ -1,23 +1,13 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
 
-/**
- * Film.
- */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class Film {
-
+public class NewFilmRequest {
     private Long id;
 
     @NotBlank(message = "Название фильма не может быть пустым")
@@ -32,9 +22,9 @@ public class Film {
     @Positive(message = "Продолжительность фильма не может быть меньше нуля")
     private int duration;
 
-    private Rating rating;
+    private RatingDto mpa;
 
-    private LinkedHashSet<Genre> genres;
+    private LinkedHashSet<GenreDto> genres;
 
     @AssertTrue(message = "Дата релиза не может быть раньше 28 декабря 1895 года")
     public boolean isReleaseDateValid() {

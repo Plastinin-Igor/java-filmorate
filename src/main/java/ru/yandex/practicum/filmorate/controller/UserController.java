@@ -4,7 +4,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.dto.NewUserRequest;
+import ru.yandex.practicum.filmorate.dto.UpdateUserRequest;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -19,28 +21,29 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("users")
-    public User create(@Valid @RequestBody User user) {
-        User userLocal = userService.addUser(user);
-        log.info("Пользователь с Id: {} успешно добавлен в систему.", user.getId());
+    public UserDto create(@Valid @RequestBody NewUserRequest userRequest) {
+        UserDto userLocal = userService.addUser(userRequest);
+        log.info("Пользователь с Id: {} успешно добавлен в систему.", userLocal.getId());
         return userLocal;
     }
 
     @PutMapping("users")
-    public User update(@Valid @RequestBody User newUser) {
-        User user = userService.updateUser(newUser);
-        log.info("Пользователь {} с Id: {} успешно обновлен в системе.", newUser.getLogin(), newUser.getId());
+    public UserDto update(@Valid @RequestBody UpdateUserRequest request) {
+        UserDto user = userService.updateUser(request);
+        log.info("Пользователь {} с Id: {} успешно обновлен в системе.", request.getLogin(), request.getId());
         return user;
     }
 
     @GetMapping("users")
-    public Collection<User> findAll() {
+    public Collection<UserDto> findAll() {
         log.info("Выполнен запрос к списку пользователей. В системе зарегистрировано пользователей: {}.",
                 userService.getUsers().size());
         return userService.getUsers();
     }
 
     @GetMapping("users/{userId}")
-    public User getUserById(@PathVariable long userId) {
+    public UserDto getUserById(@PathVariable long userId) {
+        log.info("Выполнен запрос к пользователю с id: {}.", userId);
         return userService.getUserById(userId);
     }
 
@@ -63,15 +66,15 @@ public class UserController {
 
     //Возвращаем список пользователей, являющихся его друзьями.
     @GetMapping("/users/{id}/friends")
-    public Collection<User> getFriends(@PathVariable long id) {
+    public Collection<UserDto> getFriends(@PathVariable long id) {
         log.info("Запросили список друзей для пользователя c Id: {}.", id);
         return userService.getFriends(id);
     }
 
     //Список друзей, общих с другим пользователем.
     @GetMapping("/users/{id}/friends/common/{otherId}")
-    public Collection<User> getCommonFriends(@PathVariable long id,
-                                             @PathVariable long otherId) {
+    public Collection<UserDto> getCommonFriends(@PathVariable long id,
+                                                @PathVariable long otherId) {
         log.info("Запросили список общих друзей для пользователя с Id: {} и пользователя с Id: {}.",
                 id, otherId);
         return userService.getCommonFriends(id, otherId);

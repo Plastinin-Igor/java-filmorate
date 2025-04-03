@@ -20,7 +20,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     public Film addFilm(Film film) {
         film.setId(getNextId());
-        film.setRating(0);
         films.put(film.getId(), film);
         return film;
     }
@@ -45,8 +44,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> getFilmById(Long filmId) {
-        return Optional.ofNullable(films.get(filmId));
+    public Film getFilmById(Long filmId) {
+        return films.get(filmId);
     }
 
     @Override
@@ -54,12 +53,10 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (likes.containsKey(filmId)) {
             likes.get(filmId).add(userId);
             Film film = films.get(filmId);
-            film.setRating(likes.get(filmId).size());
         } else {
             likes.put(filmId, new HashSet<>());
             likes.get(filmId).add(userId);
             Film film = films.get(filmId);
-            film.setRating(likes.get(filmId).size());
         }
     }
 
@@ -67,13 +64,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     public void deleteLike(Long filmId, Long userId) {
         likes.get(filmId).remove(userId);
         Film film = films.get(filmId);
-        film.setRating(likes.get(filmId).size());
     }
 
     @Override
     public Collection<Film> getTopPopularFilms(int count) {
         List<Film> filmOrderRate = new ArrayList<>(films.values());
-        Collections.sort(filmOrderRate, Comparator.comparing(Film::getRating).reversed());
         return filmOrderRate.subList(0, Math.min(count, filmOrderRate.size()));
     }
 

@@ -1,9 +1,15 @@
 package ru.yandex.practicum.filmorate.model;
 
-public enum Rating {
-    G,
-    PG,
-    PG13,
-    R,
-    NC17
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class Rating {
+    private Long id;
+    private String name;
 }
